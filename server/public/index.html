@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Mario Bistro Brews — Staff Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0f0608;
+  --bg2:    #160b0d;
+  --bg3:    #1c0e10;
+  --gold:   #c9a84c;
+  --goldd:  #8a6e2a;
+  --cream:  #e8d5a3;
+  --muted:  #7a5c40;
+  --border: #2e1810;
+  --red:    #a03030;
+  --green:  #2a6a2a;
+  --radius: 6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-serif;font-size:14px;min-height:100vh}
+a{color:var(--gold);text-decoration:none}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.login-box{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:40px 32px;width:100%;max-width:340px;text-align:center}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);letter-spacing:4px;text-transform:uppercase;margin-bottom:4px}
+.login-sub{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:32px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:28px}
+.pin-dot{width:14px;height:14px;border-radius:50%;background:var(--border);border:1px solid var(--goldd);transition:background .15s}
+.pin-dot.filled{background:var(--gold)}
+.pin-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pin-btn{background:var(--bg3);border:1px solid var(--border);color:var(--cream);font-family:'Josefin Sans',sans-serif;font-size:18px;font-weight:300;padding:16px;border-radius:var(--radius);cursor:pointer;transition:background .15s}
+.pin-btn:hover{background:#251213}
+.pin-btn:active{background:var(--goldd)}
+.pin-btn.wide{grid-column:span 2}
+.pin-error{color:#c06060;font-size:11px;letter-spacing:1px;margin-top:12px;min-height:16px}
+
+/* ── APP SHELL ── */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-logo{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);letter-spacing:3px;text-transform:uppercase}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.logout-btn{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer;background:none;border:none;font-family:'Josefin Sans',sans-serif}
+.logout-btn:hover{color:var(--cream)}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav{background:var(--bg2);border-top:1px solid var(--border);display:flex;position:sticky;bottom:0;z-index:50}
+.bnav-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;gap:3px;cursor:pointer;border:none;background:none;color:var(--muted);font-family:'Josefin Sans',sans-serif;font-size:8px;letter-spacing:1px;text-transform:uppercase;transition:color .15s;border-top:2px solid transparent}
+.bnav-tab svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.bnav-tab.active{color:var(--gold);border-top-color:var(--gold)}
+
+/* ── MAIN CONTENT ── */
+.main{flex:1;padding:16px;padding-bottom:80px;max-width:680px;margin:0 auto;width:100%}
+
+/* ── SECTION HEADER ── */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.sec-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--cream)}
+.btn-add{background:var(--gold);color:var(--bg);border:none;padding:8px 16px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;cursor:pointer;border-radius:var(--radius);display:flex;align-items:center;gap:6px}
+.btn-add:hover{background:#dbbf6a}
+
+/* ── ITEM CARDS ── */
+.item-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden}
+.item-card{background:var(--bg2);padding:14px 16px;display:flex;align-items:flex-start;gap:12px;transition:background .15s}
+.item-card:hover{background:var(--bg3)}
+.item-card.unavailable{opacity:.45}
+.item-main{flex:1;min-width:0}
+.item-name{font-family:'Cormorant Garamond',serif;font-size:17px;color:var(--cream);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-desc{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.item-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.item-price{font-size:14px;color:var(--gold);letter-spacing:.5px}
+.badge{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:2px}
+.badge-special{background:#2a1800;color:var(--gold);border:1px solid var(--goldd)}
+.badge-off{background:#2a0a0a;color:#c06060;border:1px solid #4a1a1a}
+.badge-local{background:#0a1a0a;color:#7ab87a;border:1px solid #1a3a1a}
+.badge-gf{background:#1a0a1a;color:#a07ab8;border:1px solid #3a1a4a}
+.item-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.icon-btn{width:32px;height:32px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.icon-btn:hover{background:var(--bg3)}
+.icon-btn svg{width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.icon-btn.active svg{stroke:var(--gold)}
+.icon-btn.danger:hover{background:#2a0808}
+.icon-btn.danger:hover svg{stroke:#c06060}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border);border-radius:12px 12px 0 0;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;padding:24px 20px 40px}
+.modal-handle{width:36px;height:3px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--cream);margin-bottom:20px}
+.form-row{margin-bottom:14px}
+.form-label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:10px 12px;font-family:'Josefin Sans',sans-serif;font-size:13px;border-radius:var(--radius)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--goldd)}
+.form-textarea{height:80px;resize:none}
+.form-select option{background:var(--bg2)}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-toggles{display:flex;gap:12px;margin-bottom:14px}
+.toggle-label{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.toggle-input{display:none}
+.toggle-track{width:36px;height:20px;background:var(--border);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0}
+.toggle-track::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;background:#555;border-radius:50%;transition:transform .2s,background .2s}
+.toggle-input:checked + .toggle-track{background:var(--goldd)}
+.toggle-input:checked + .toggle-track::after{transform:translateX(16px);background:var(--gold)}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+.btn-save{flex:1;background:var(--gold);color:var(--bg);border:none;padding:12px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;cursor:pointer;border-radius:var(--radius)}
+.btn-save:hover{background:#dbbf6a}
+.btn-cancel{padding:12px 20px;background:transparent;color:var(--muted);border:1px solid var(--border);font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:var(--radius)}
+.btn-delete{padding:12px 16px;background:transparent;color:#c06060;border:1px solid #4a1a1a;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:var(--radius)}
+
+/* ── SETTINGS PANEL ── */
+.settings-form{display:flex;flex-direction:column;gap:14px}
+.settings-save{background:var(--gold);color:var(--bg);border:none;padding:12px 24px;font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;cursor:pointer;border-radius:var(--radius);margin-top:8px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg2);border:1px solid var(--border);color:var(--cream);padding:10px 20px;border-radius:var(--radius);font-size:12px;letter-spacing:.5px;opacity:0;transition:all .25s;z-index:300;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:var(--goldd);color:var(--gold)}
+.toast.error{border-color:#4a1a1a;color:#c06060}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{font-size:32px;margin-bottom:12px;opacity:.3}
+.empty p{font-size:12px;letter-spacing:.5px}
+
+/* ── LOADING ── */
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase}
+
+/* ── STATS BAR ── */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.stat{background:var(--bg2);padding:12px;text-align:center}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold)}
+.stat-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-top:2px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Mario Bistro</div>
+    <div class="login-sub">Staff access · Enter PIN</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinClear()">✕</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" onclick="pinBack()">⌫</button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-logo">MB Brews</div>
+    <div class="topbar-right">
+      <span id="current-section-label" style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)"></span>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="main" id="main-content">
+    <div class="loading">Loading...</div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="bnav-tab active" onclick="showSection('specials')" id="tab-specials">
+      <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Specials
+    </button>
+    <button class="bnav-tab" onclick="showSection('wine')" id="tab-wine">
+      <svg viewBox="0 0 24 24"><path d="M8 22h8M12 11v11M5 3h14l-2 8a5 5 0 0 1-10 0L5 3z"/></svg>
+      Wine
+    </button>
+    <button class="bnav-tab" onclick="showSection('beer')" id="tab-beer">
+      <svg viewBox="0 0 24 24"><path d="M17 11h1a3 3 0 0 1 0 6h-1M5 11h12v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V11zM9 3v8M15 3v8M5 7h14"/></svg>
+      Beer
+    </button>
+    <button class="bnav-tab" onclick="showSection('cocktail')" id="tab-cocktail">
+      <svg viewBox="0 0 24 24"><path d="M8 22h8M12 17V3M3 3h18l-9 9-9-9z"/></svg>
+      Bar
+    </button>
+    <button class="bnav-tab" onclick="showSection('food')" id="tab-food">
+      <svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
+      Food
+    </button>
+    <button class="bnav-tab" onclick="showSection('settings')" id="tab-settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+</div>
+
+<!-- ITEM MODAL -->
+<div class="modal-bg" id="item-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Add item</div>
+    <div class="form-row">
+      <label class="form-label">Item name</label>
+      <input class="form-input" id="f-name" placeholder="e.g. Bistro Negroni">
+    </div>
+    <div class="form-row">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="f-desc" placeholder="Ingredients, origin, tasting notes..."></textarea>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Price</label>
+        <input class="form-input" id="f-price" type="number" step="0.50" placeholder="0.00">
+      </div>
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="f-category">
+          <option value="wine">Wine</option>
+          <option value="beer">Beer</option>
+          <option value="cocktail">Cocktail</option>
+          <option value="spirit">Spirit</option>
+          <option value="food">Food</option>
+          <option value="na">N/A Drink</option>
+          <option value="special">Special</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Badge label (optional)</label>
+      <input class="form-input" id="f-badge" placeholder="e.g. Local · GF · Draft · Tonight only">
+    </div>
+    <div class="form-toggles">
+      <label class="toggle-label">
+        <input type="checkbox" class="toggle-input" id="f-available" checked>
+        <div class="toggle-track"></div>
+        Available
+      </label>
+      <label class="toggle-label">
+        <input type="checkbox" class="toggle-input" id="f-special">
+        <div class="toggle-track"></div>
+        Tonight's special
+      </label>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-delete" id="btn-delete" style="display:none" onclick="deleteItem()">Delete</button>
+      <button class="btn-save" onclick="saveItem()">Save item</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+const API = '';
+let currentSection = 'specials';
+let editingId = null;
+let allItems = [];
+
+// ── PIN LOGIN ─────────────────────────────────────────────────────
+let pinVal = '';
+function pinPress(d) {
+  if (pinVal.length >= 4) return;
+  pinVal += d;
+  updateDots();
+  if (pinVal.length === 4) submitPin();
+}
+function pinBack() { pinVal = pinVal.slice(0,-1); updateDots(); }
+function pinClear() { pinVal = ''; updateDots(); }
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('d'+i).classList.toggle('filled', i < pinVal.length);
+  }
+}
+async function submitPin() {
+  try {
+    const r = await fetch(API+'/api/auth/login', {
+      method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ pin: pinVal })
+    });
+    if (r.ok) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      showSection('specials');
+    } else {
+      document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
+      pinVal = ''; updateDots();
+      setTimeout(() => document.getElementById('pin-error').textContent = '', 2000);
+    }
+  } catch(e) {
+    document.getElementById('pin-error').textContent = 'Connection error';
+    pinVal = ''; updateDots();
+  }
+}
+async function logout() {
+  await fetch(API+'/api/auth/logout', { method:'POST', credentials:'include' });
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  pinVal = ''; updateDots();
+}
+
+// ── CHECK AUTH ON LOAD ────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const r = await fetch(API+'/api/auth/check', { credentials:'include' });
+    const d = await r.json();
+    if (d.authed) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'flex';
+      showSection('specials');
+    }
+  } catch(e) {}
+});
+
+// ── SECTIONS ─────────────────────────────────────────────────────
+const sectionLabels = {
+  specials:'Specials', wine:'Wine', beer:'Beer & Draft',
+  cocktail:'Cocktails & Spirits', food:'Food Menu', settings:'Settings'
+};
+
+async function showSection(sec) {
+  currentSection = sec;
+  document.querySelectorAll('.bnav-tab').forEach(t => t.classList.remove('active'));
+  const tabId = sec === 'cocktail' ? 'tab-cocktail' : `tab-${sec}`;
+  const tab = document.getElementById(tabId);
+  if (tab) tab.classList.add('active');
+  document.getElementById('current-section-label').textContent = sectionLabels[sec] || sec;
+
+  if (sec === 'settings') { renderSettings(); return; }
+  renderSection(sec);
+}
+
+async function fetchItems(category) {
+  let url = API + '/api/admin/items';
+  if (category === 'specials') {
+    const r = await fetch(url, { credentials:'include' });
+    const items = await r.json();
+    return items.filter(i => i.is_special);
+  }
+  if (category === 'cocktail') {
+    const r = await fetch(url+'?category=cocktail', { credentials:'include' });
+    const r2= await fetch(url+'?category=spirit',   { credentials:'include' });
+    return [...await r.json(), ...await r2.json()];
+  }
+  const r = await fetch(url + (category ? `?category=${category}` : ''), { credentials:'include' });
+  return r.json();
+}
+
+async function renderSection(sec) {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const items = await fetchItems(sec);
+    allItems = items;
+    const available = items.filter(i => i.available).length;
+    const specials  = items.filter(i => i.is_special).length;
+    const eightySix = items.filter(i => !i.available).length;
+
+    let html = `
+      <div class="sec-header">
+        <div class="sec-title">${sectionLabels[sec]}</div>
+        <button class="btn-add" onclick="openModal(null,'${sec === 'cocktail' ? 'cocktail' : sec === 'specials' ? 'special' : sec}')">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add
+        </button>
+      </div>
+      <div class="stats-bar">
+        <div class="stat"><div class="stat-num">${items.length}</div><div class="stat-label">Total</div></div>
+        <div class="stat"><div class="stat-num">${available}</div><div class="stat-label">Available</div></div>
+        <div class="stat"><div class="stat-num">${eightySix}</div><div class="stat-label">86'd</div></div>
+      </div>`;
+
+    if (items.length === 0) {
+      html += `<div class="empty"><div class="empty-icon">◇</div><p>No items yet — tap Add to get started</p></div>`;
+    } else {
+      html += '<div class="item-list">';
+      items.forEach(item => {
+        const price = item.price ? `$${parseFloat(item.price).toFixed(2)}` : '';
+        const badges = [];
+        if (item.is_special)  badges.push(`<span class="badge badge-special">Special</span>`);
+        if (!item.available)  badges.push(`<span class="badge badge-off">86'd</span>`);
+        if (item.badge)       badges.push(`<span class="badge badge-local">${item.badge}</span>`);
+
+        html += `
+          <div class="item-card ${!item.available ? 'unavailable' : ''}" id="card-${item.id}">
+            <div class="item-main" onclick="openModal('${item.id}')">
+              <div class="item-name">${item.name}</div>
+              <div class="item-desc">${item.description || ''}</div>
+              <div class="item-meta">
+                <span class="item-price">${price}</span>
+                ${badges.join('')}
+              </div>
+            </div>
+            <div class="item-actions">
+              <button class="icon-btn ${item.is_special ? 'active' : ''}" title="Toggle special" onclick="toggleSpecial('${item.id}',this)">
+                <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </button>
+              <button class="icon-btn ${!item.available ? 'active' : ''}" title="${item.available ? '86 item' : 'Restore item'}" onclick="toggleAvailable('${item.id}',this)">
+                <svg viewBox="0 0 24 24">${item.available
+                  ? '<path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M15 12a3 3 0 1 1-3-3"/>'
+                  : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+                }</svg>
+              </button>
+              <button class="icon-btn danger" title="Edit" onclick="openModal('${item.id}')">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </button>
+            </div>
+          </div>`;
+      });
+      html += '</div>';
+    }
+    main.innerHTML = html;
+  } catch(e) {
+    main.innerHTML = `<div class="empty"><p>Error loading items: ${e.message}</p></div>`;
+  }
+}
+
+// ── TOGGLE AVAILABLE (86) ─────────────────────────────────────────
+async function toggleAvailable(id, btn) {
+  try {
+    const r = await fetch(API+`/api/admin/items/${id}/toggle`, {
+      method:'PATCH', credentials:'include'
+    });
+    const d = await r.json();
+    const card = document.getElementById('card-'+id);
+    card.classList.toggle('unavailable', !d.available);
+    showToast(d.available ? 'Item restored ✓' : 'Item 86\'d', 'success');
+    setTimeout(() => renderSection(currentSection), 400);
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+}
+
+// ── TOGGLE SPECIAL ────────────────────────────────────────────────
+async function toggleSpecial(id, btn) {
+  try {
+    const r = await fetch(API+`/api/admin/items/${id}/special`, {
+      method:'PATCH', credentials:'include'
+    });
+    const d = await r.json();
+    btn.classList.toggle('active', d.is_special);
+    showToast(d.is_special ? '★ Marked as special' : 'Removed from specials', 'success');
+    setTimeout(() => renderSection(currentSection), 400);
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────
+async function openModal(id, defaultCategory) {
+  editingId = id;
+  const modal = document.getElementById('item-modal');
+  const delBtn = document.getElementById('btn-delete');
+  document.getElementById('modal-title').textContent = id ? 'Edit item' : 'Add item';
+  delBtn.style.display = id ? 'block' : 'none';
+
+  if (id) {
+    try {
+      const r = await fetch(API+`/api/admin/items/${id}`, { credentials:'include' });
+      const item = await r.json();
+      document.getElementById('f-name').value      = item.name || '';
+      document.getElementById('f-desc').value      = item.description || '';
+      document.getElementById('f-price').value     = item.price || '';
+      document.getElementById('f-badge').value     = item.badge || '';
+      document.getElementById('f-category').value  = item.category || 'cocktail';
+      document.getElementById('f-available').checked = item.available;
+      document.getElementById('f-special').checked   = item.is_special;
+    } catch(e) { showToast('Error loading item', 'error'); return; }
+  } else {
+    document.getElementById('f-name').value     = '';
+    document.getElementById('f-desc').value     = '';
+    document.getElementById('f-price').value    = '';
+    document.getElementById('f-badge').value    = '';
+    document.getElementById('f-category').value = defaultCategory || currentSection || 'cocktail';
+    document.getElementById('f-available').checked = true;
+    document.getElementById('f-special').checked   = false;
+  }
+  modal.classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('item-modal').classList.remove('open');
+  editingId = null;
+}
+
+async function saveItem() {
+  const body = {
+    name:        document.getElementById('f-name').value.trim(),
+    description: document.getElementById('f-desc').value.trim(),
+    price:       parseFloat(document.getElementById('f-price').value) || null,
+    badge:       document.getElementById('f-badge').value.trim() || null,
+    category:    document.getElementById('f-category').value,
+    available:   document.getElementById('f-available').checked,
+    is_special:  document.getElementById('f-special').checked,
+  };
+  if (!body.name) { showToast('Name is required', 'error'); return; }
+  try {
+    if (editingId) {
+      await fetch(API+`/api/admin/items/${editingId}`, {
+        method:'PATCH', credentials:'include',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      showToast('Item updated ✓', 'success');
+    } else {
+      await fetch(API+'/api/admin/items', {
+        method:'POST', credentials:'include',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify(body)
+      });
+      showToast('Item added ✓', 'success');
+    }
+    closeModal();
+    renderSection(currentSection);
+  } catch(e) { showToast('Error saving: '+e.message, 'error'); }
+}
+
+async function deleteItem() {
+  if (!editingId) return;
+  if (!confirm('Delete this item? This cannot be undone.')) return;
+  try {
+    await fetch(API+`/api/admin/items/${editingId}`, {
+      method:'DELETE', credentials:'include'
+    });
+    showToast('Item deleted', 'success');
+    closeModal();
+    renderSection(currentSection);
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+}
+
+// ── SETTINGS ─────────────────────────────────────────────────────
+async function renderSettings() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '<div class="loading">Loading...</div>';
+  try {
+    const r = await fetch(API+'/api/settings');
+    const s = await r.json();
+    main.innerHTML = `
+      <div class="sec-header">
+        <div class="sec-title">Settings</div>
+      </div>
+      <div class="settings-form">
+        <div class="form-row">
+          <label class="form-label">Hours</label>
+          <input class="form-input" id="s-hours" value="${s.hours || ''}">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Kitchen hours</label>
+          <input class="form-input" id="s-kitchen" value="${s.kitchen_hours || ''}">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Phone</label>
+          <input class="form-input" id="s-phone" value="${s.phone || ''}">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Email</label>
+          <input class="form-input" id="s-email" value="${s.email || ''}">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Address</label>
+          <input class="form-input" id="s-address" value="${s.address || ''}">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Specials banner message</label>
+          <input class="form-input" id="s-banner" value="${s.specials_banner || ''}">
+        </div>
+        <button class="settings-save" onclick="saveSettings()">Save settings</button>
+        <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--border)">
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Change PIN</div>
+          <input class="form-input" id="s-pin" type="password" placeholder="Enter new 4-digit PIN" maxlength="4">
+          <button class="settings-save" style="margin-top:8px;background:var(--bg3);color:var(--cream);border:1px solid var(--border)" onclick="savePin()">Update PIN</button>
+        </div>
+      </div>`;
+  } catch(e) {
+    main.innerHTML = `<div class="empty"><p>Error loading settings</p></div>`;
+  }
+}
+
+async function saveSettings() {
+  const body = {
+    hours:           document.getElementById('s-hours').value,
+    kitchen_hours:   document.getElementById('s-kitchen').value,
+    phone:           document.getElementById('s-phone').value,
+    email:           document.getElementById('s-email').value,
+    address:         document.getElementById('s-address').value,
+    specials_banner: document.getElementById('s-banner').value,
+  };
+  try {
+    await fetch(API+'/api/admin/settings', {
+      method:'PATCH', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    showToast('Settings saved ✓', 'success');
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+}
+
+async function savePin() {
+  const pin = document.getElementById('s-pin').value;
+  if (pin.length !== 4 || isNaN(pin)) { showToast('PIN must be 4 digits', 'error'); return; }
+  try {
+    await fetch(API+'/api/admin/settings', {
+      method:'PATCH', credentials:'include',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ admin_pin: pin })
+    });
+    showToast('PIN updated ✓', 'success');
+    document.getElementById('s-pin').value = '';
+  } catch(e) { showToast('Error: '+e.message, 'error'); }
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// Close modal on bg click
+document.getElementById('item-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>

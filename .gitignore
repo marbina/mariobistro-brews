@@ -1,0 +1,22 @@
+# Environment variables — never commit these
+.env
+.env.local
+.env.production
+
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# PM2
+.pm2/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# SSL certs (managed by certbot on server)
+/etc/letsencrypt/

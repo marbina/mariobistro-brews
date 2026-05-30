@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu & Bar | Mario Bistro Brews | Orchard Park NY</title>
+<meta name="description" content="Full menu and bar offerings at Mario Bistro Brews in Orchard Park, NY. Wine list, craft cocktails, draft beer, spirits, food menu and nightly specials. Located at 4211 North Buffalo Rd.">
+<meta name="keywords" content="Mario Bistro Brews, Orchard Park restaurant, Orchard Park bar, wine list Orchard Park, cocktails Orchard Park NY, restaurant menu Orchard Park, bar menu Buffalo NY, 4211 North Buffalo Rd">
+<meta property="og:title" content="Menu & Bar | Mario Bistro Brews | Orchard Park NY">
+<meta property="og:description" content="Wine, cocktails, craft beer, spirits and food at Mario Bistro Brews — 4211 North Buffalo Rd, Orchard Park NY. Open Wed–Sat from 4pm.">
+<meta property="og:url" content="https://mariobistrobrews.com/menu">
+<meta property="og:type" content="restaurant.menu">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://mariobistrobrews.com/menu">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Restaurant",
+  "name": "Mario Bistro Brews",
+  "url": "https://mariobistrobrews.com",
+  "telephone": "+17167408080",
+  "email": "mariobistrobrews@gmail.com",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "4211 North Buffalo Rd",
+    "addressLocality": "Orchard Park",
+    "addressRegion": "NY",
+    "postalCode": "14127",
+    "addressCountry": "US"
+  },
+  "openingHours": ["We-Sa 16:00-23:00"],
+  "servesCuisine": ["Italian", "American", "Bar"],
+  "hasMenu": "https://mariobistrobrews.com/menu",
+  "priceRange": "$$"
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0f0608;
+    --bg2:       #160b0d;
+    --bg3:       #1c0e10;
+    --gold:      #c9a84c;
+    --gold-dim:  #8a6e2a;
+    --cream:     #e8d5a3;
+    --muted:     #7a5c40;
+    --border:    #2e1810;
+    --border2:   #3d2010;
+    --red-acc:   #6b1a1a;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── DEMO APPROVAL BANNER ── */
+  .approval-bar {
+    background: #1a2a1a;
+    border-bottom: 1px solid #2d4a2d;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #7ab87a;
+  }
+  .approval-bar strong { color: #a3d4a3; }
+  .approval-actions { display: flex; gap: 8px; }
+  .approve-btn {
+    padding: 5px 14px;
+    border-radius: 2px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-family: 'Josefin Sans', sans-serif;
+    border: none;
+  }
+  .btn-approve { background: #2d6a2d; color: #c8f0c8; }
+  .btn-comment { background: transparent; color: #7ab87a; border: 1px solid #2d4a2d !important; }
+  .comment-box {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+  }
+  .comment-box.open { display: flex; }
+  .comment-inner {
+    background: #1a1008;
+    border: 1px solid var(--border2);
+    padding: 28px;
+    width: 90%;
+    max-width: 420px;
+    border-radius: 4px;
+  }
+  .comment-inner h3 {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin-bottom: 14px;
+    text-transform: uppercase;
+  }
+  .comment-inner textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border2);
+    color: var(--cream);
+    padding: 10px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 13px;
+    height: 100px;
+    resize: none;
+    border-radius: 2px;
+    margin-bottom: 12px;
+  }
+  .comment-inner textarea:focus { outline: none; border-color: var(--gold-dim); }
+  .comment-btns { display: flex; gap: 8px; justify-content: flex-end; }
+  .comment-btns button {
+    padding: 8px 16px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 2px;
+    border: none;
+  }
+  .send-btn { background: var(--gold); color: var(--bg); }
+  .cancel-btn { background: transparent; color: var(--muted); border: 1px solid var(--border2) !important; }
+
+  /* ── TOP NAV ── */
+  .topnav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 62px;
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: 4px;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .logo em { font-style: italic; color: var(--cream); opacity: .7; }
+  .topnav-links {
+    display: flex;
+    gap: 28px;
+    list-style: none;
+  }
+  .topnav-links a {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .topnav-links a:hover { color: var(--gold); }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 88px 32px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(139,100,40,.04) 39px, rgba(139,100,40,.04) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(139,100,40,.04) 39px, rgba(139,100,40,.04) 40px);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(42px, 8vw, 80px);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--cream);
+    margin-bottom: 6px;
+  }
+  .hero h1 span { color: var(--gold); font-style: italic; }
+  .hero-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 22px 0;
+    color: var(--gold-dim);
+    font-size: 20px;
+    opacity: .5;
+  }
+  .hero-divider::before, .hero-divider::after {
+    content: '';
+    display: block;
+    width: 80px;
+    height: 1px;
+    background: var(--border2);
+  }
+  .hero-sub {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    max-width: 420px;
+    margin: 0 auto 36px;
+    line-height: 1.8;
+    text-transform: uppercase;
+  }
+  .hero-btns {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--bg);
+    border: none;
+    padding: 13px 32px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background .2s;
+  }
+  .btn-gold:hover { background: #dbbf6a; }
+  .btn-outline {
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    padding: 12px 32px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: border-color .2s, color .2s;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--cream); }
+
+  /* ── STICKY SECTION NAV ── */
+  .section-nav {
+    position: sticky;
+    top: 62px;
+    z-index: 90;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .section-nav::-webkit-scrollbar { display: none; }
+  .snav-tab {
+    flex-shrink: 0;
+    padding: 0 22px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color .2s, border-color .2s;
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .snav-tab:hover { color: var(--cream); }
+  .snav-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ── SECTION WRAPPER ── */
+  .sec {
+    padding: 72px 32px;
+    border-bottom: 1px solid var(--border);
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .sec.full { max-width: none; padding-left: 0; padding-right: 0; }
+  .sec.alt { background: var(--bg2); max-width: none; }
+  .sec.alt .sec-inner { max-width: 860px; margin: 0 auto; padding: 0 32px; }
+
+  .sec-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .sec-eyebrow span {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .sec-eyebrow::before, .sec-eyebrow::after {
+    content: '';
+    flex: 1;
+    max-width: 48px;
+    height: 1px;
+    background: var(--border2);
+  }
+  .sec h2 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 300;
+    color: var(--cream);
+    margin-bottom: 6px;
+    line-height: 1.1;
+  }
+  .sec h2 em { color: var(--gold); }
+  .sec-desc {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+
+  /* ── SPECIALS BANNER ── */
+  .specials-banner {
+    background: #1a0e04;
+    border: 1px solid var(--gold-dim);
+    padding: 18px 22px;
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+    border-radius: 2px;
+  }
+  .spec-star {
+    color: var(--gold);
+    font-size: 22px;
+    line-height: 1;
+    margin-top: 2px;
+  }
+  .spec-text strong {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 3px;
+    font-weight: 400;
+  }
+  .spec-text p {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: .5px;
+  }
+
+  /* ── CARD GRID ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .menu-card {
+    background: var(--bg);
+    padding: 22px 20px;
+    transition: background .15s;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .menu-card:hover { background: var(--bg3); }
+  .card-cat {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .card-name {
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--cream);
+    line-height: 1.2;
+  }
+  .card-desc {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    flex: 1;
+  }
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .card-price {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 15px;
+    color: var(--gold);
+    letter-spacing: 1px;
+  }
+  .badge {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 1px;
+  }
+  .badge-special { background: #2e1a04; color: #c9a84c; border: 1px solid var(--gold-dim); }
+  .badge-local   { background: #0e1e0e; color: #7ab87a; border: 1px solid #2a4a2a; }
+  .badge-gf      { background: #1a0e1a; color: #a07ab8; border: 1px solid #3a2a4a; }
+  .badge-86      { background: #1e0e0e; color: #a04040; border: 1px solid #4a2020; text-decoration: line-through; }
+
+  /* ── WINE LIST ── */
+  .wine-subhead {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin: 32px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .wine-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .wine-row:last-child { border-bottom: none; }
+  .wine-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold-dim);
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+  .wine-info { flex: 1; }
+  .wine-name { font-size: 18px; color: var(--cream); font-weight: 400; margin-bottom: 2px; }
+  .wine-region {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: .5px;
+  }
+  .wine-price {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 13px;
+    color: var(--gold);
+    white-space: nowrap;
+    padding-left: 12px;
+    line-height: 1.6;
+    text-align: right;
+  }
+  .wine-price small {
+    display: block;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: .5px;
+  }
+
+  /* ── BEER SECTION ── */
+  .beer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .beer-card {
+    background: var(--bg);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: background .15s;
+  }
+  .beer-card:hover { background: var(--bg3); }
+  .beer-style {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .beer-name { font-size: 18px; color: var(--cream); }
+  .beer-origin {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    flex: 1;
+  }
+  .beer-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .abv {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── FOOD SECTION ── */
+  .food-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 24px;
+  }
+  .food-item { border-top: 1px solid var(--border); padding-top: 14px; }
+  .food-cat {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 4px;
+  }
+  .food-name { font-size: 18px; color: var(--cream); margin-bottom: 4px; }
+  .food-desc {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .food-price {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 14px;
+    color: var(--gold);
+  }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    padding: 56px 32px 40px;
+    text-align: center;
+  }
+  .footer-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 6px;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .footer-tagline {
+    font-style: italic;
+    font-size: 15px;
+    color: var(--muted);
+    margin-bottom: 28px;
+  }
+  .footer-rule {
+    width: 60px;
+    height: 1px;
+    background: var(--border2);
+    margin: 0 auto 24px;
+  }
+  .footer-info {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    line-height: 2.2;
+    text-transform: uppercase;
+  }
+  .footer-copy {
+    margin-top: 32px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    color: #3a2a18;
+    letter-spacing: 1px;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .hero h1, .hero-sub, .hero-btns {
+    animation: fadeUp .7s ease both;
+  }
+  .hero-sub  { animation-delay: .12s; }
+  .hero-btns { animation-delay: .22s; }
+
+  /* ── MOBILE ── */
+  @media (max-width: 600px) {
+    .topnav-links { display: none; }
+    .sec { padding: 52px 20px; }
+    .approval-bar { font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- APPROVAL BANNER (remove before going live) -->
+<div class="approval-bar">
+  <div><strong>DEMO — For team review only</strong> &nbsp;·&nbsp; mariobistrobrews.com/demo &nbsp;·&nbsp; Please review and leave feedback below</div>
+  <div class="approval-actions">
+    <button class="approve-btn" onclick="handleApprove()">✓ Approve</button>
+    <button class="btn-comment" onclick="openComment()">Leave feedback</button>
+  </div>
+</div>
+
+<!-- FEEDBACK MODAL -->
+<div class="comment-box" id="commentBox">
+  <div class="comment-inner">
+    <h3>Leave feedback</h3>
+    <div style="margin-bottom:10px">
+      <label style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#7a5c40;display:block;margin-bottom:5px">Your name</label>
+      <input type="text" id="feedbackName" placeholder="e.g. Maria" style="width:100%;background:#0f0608;border:1px solid #3d2010;color:#e8d5a3;padding:8px 10px;font-family:'Josefin Sans',sans-serif;font-size:13px;border-radius:2px">
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#7a5c40;display:block;margin-bottom:5px">Your feedback</label>
+      <textarea id="commentText" placeholder="What would you like to change, add, or approve?"></textarea>
+    </div>
+    <div class="comment-btns">
+      <button class="cancel-btn" onclick="closeComment()">Cancel</button>
+      <button class="send-btn" onclick="sendComment()">Open in email</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <div class="logo">Mario Bistro <em>&</em> Brews</div>
+  <ul class="topnav-links">
+    <li><a href="#reservations">Reservations</a></li>
+    <li><a href="#hours">Hours & location</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <p class="hero-eyebrow">Orchard Park, New York &nbsp;·&nbsp; Est. 2024</p>
+  <h1>Drink well.<br><span>Eat better.</span></h1>
+  <div class="hero-divider">✦</div>
+  <p class="hero-sub">4211 North Buffalo Rd · Orchard Park, NY<br>Wed – Sat from 4pm · Bar & kitchen</p>
+  <div class="hero-btns">
+    <a href="#specials" class="btn-gold">Explore the menu</a>
+    <a href="https://mariobistrobrews.com" class="btn-outline">Back to our website</a>
+  </div>
+</section>
+
+<!-- STICKY SECTION NAV -->
+<nav class="section-nav" id="sectionNav">
+  <a class="snav-tab active" href="#specials">Tonight's specials</a>
+  <a class="snav-tab" href="#wine">Wine list</a>
+  <a class="snav-tab" href="#beer">Beer & draft</a>
+  <a class="snav-tab" href="#cocktails">Cocktails</a>
+  <a class="snav-tab" href="#spirits">Spirits</a>
+  <a class="snav-tab" href="#food">Food menu</a>
+  <a class="snav-tab" href="#na">N/A drinks</a>
+</nav>
+
+<!-- SPECIALS -->
+<section id="specials" class="sec">
+  <div class="sec-eyebrow"><span>Updated nightly</span></div>
+  <h2>Tonight's <em>specials</em></h2>
+  <p class="sec-desc">Curated by our bar & kitchen team — changes throughout the evening</p>
+  <div class="specials-banner">
+    <div class="spec-star">✦</div>
+    <div class="spec-text">
+      <strong>Chef's pairing this evening</strong>
+      <p>Caymus Cabernet Sauvignon paired with pan-seared duck breast — $38 prix fixe &nbsp;·&nbsp; Ask your server</p>
+    </div>
+  </div>
+  <div class="card-grid">
+    <div class="menu-card">
+      <div class="card-cat">Cocktail special</div>
+      <div class="card-name">Smoked Maple Old Fashioned</div>
+      <div class="card-desc">Bulleit bourbon, house-smoked maple syrup, Angostura bitters, smoked cherry garnish</div>
+      <div class="card-footer"><span class="card-price">$15</span><span class="badge badge-special">Tonight only</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">Wine by the glass</div>
+      <div class="card-name">Whispering Angel Rosé</div>
+      <div class="card-desc">Provence, France · Pale salmon, dry, wild strawberry and mineral finish</div>
+      <div class="card-footer"><span class="card-price">$17</span><span class="badge badge-special">Tonight only</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">Draft feature</div>
+      <div class="card-name">Southern Tier IPA</div>
+      <div class="card-desc">Lakewood, NY · Citrus-forward, pine resin finish · 6.8% ABV</div>
+      <div class="card-footer"><span class="card-price">$8</span><span class="badge badge-local">Local</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">Kitchen special</div>
+      <div class="card-name">Braised Short Rib Crostini</div>
+      <div class="card-desc">House-braised short rib, whipped horseradish, pickled onion, toasted crostini · 3 pieces</div>
+      <div class="card-footer"><span class="card-price">$16</span><span class="badge badge-special">Tonight only</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- WINE -->
+<section id="wine" class="sec alt">
+  <div class="sec-inner">
+    <div class="sec-eyebrow"><span>Curated selection</span></div>
+    <h2>Wine <em>list</em></h2>
+    <p class="sec-desc">By the glass & bottle · Ask about our reserve cellar selections</p>
+
+    <div class="wine-subhead" style="margin-top:0">Red wines</div>
+    <div class="wine-row">
+      <div class="wine-dot"></div>
+      <div class="wine-info">
+        <div class="wine-name">Caymus Cabernet Sauvignon</div>
+        <div class="wine-region">Napa Valley, California · Full bodied, dark fruit, long silky finish</div>
+      </div>
+      <div class="wine-price">$22<small>glass</small></div>
+      <div class="wine-price">$88<small>bottle</small></div>
+    </div>
+    <div class="wine-row">
+      <div class="wine-dot"></div>
+      <div class="wine-info">
+        <div class="wine-name">Meiomi Pinot Noir</div>
+        <div class="wine-region">California · Bright berry, silky tannins, strawberry & mocha</div>
+      </div>
+      <div class="wine-price">$14<small>glass</small></div>
+      <div class="wine-price">$52<small>bottle</small></div>
+    </div>
+    <div class="wine-row">
+      <div class="wine-dot"></div>
+      <div class="wine-info">
+        <div class="wine-name">Decoy Merlot</div>
+        <div class="wine-region">Sonoma County · Plum, black cherry, hint of chocolate</div>
+      </div>
+      <div class="wine-price">$13<small>glass</small></div>
+      <div class="wine-price">$48<small>bottle</small></div>
+    </div>
+
+    <div class="wine-subhead">White wines</div>
+    <div class="wine-row">
+      <div class="wine-dot"></div>
+      <div class="wine-info">
+        <div class="wine-name">Rombauer Chardonnay</div>
+        <div class="wine-region">Carneros, California · Buttery, vanilla oak, tropical fruit</div>
+      </div>
+      <div class="wine-price">$18<small>glass</small></div>
+      <div class="wine-price">$70<small>bottle</small></div>
+    </div>
+    <div class="wine-row">
+      <div class="wine-dot"></div>
+      <div class="wine-info">
+        <div class="wine-name">Kim Crawford Sauvignon Blanc</div>
+        <div class="wine-region">Marlborough, New Zealand · Crisp citrus, fresh herb, grassy finish</div>
+      </div>
+      <div class="wine-price">$13<small>glass</small></div>
+      <div class="wine-price">$48<small>bottle</small></div>
+    </div>
+
+    <div class="wine-subhead">Rosé & sparkling</div>
+    <div class="wine-row">
+      <div class="wine-dot"></div>
+      <div class="wine-info">
+        <div class="wine-name">Whispering Angel Rosé</div>
+        <div class="wine-region">Provence, France · Pale salmon, dry, wild strawberry & mineral</div>
+      </div>
+      <div class="wine-price">$17<small>glass</small></div>
+      <div class="wine-price">$64<small>bottle</small></div>
+    </div>
+    <div class="wine-row">
+      <div class="wine-dot"></div>
+      <div class="wine-info">
+        <div class="wine-name">La Marca Prosecco</div>
+        <div class="wine-region">Veneto, Italy · Light, honeyed, golden apple & cream finish</div>
+      </div>
+      <div class="wine-price">$12<small>glass</small></div>
+      <div class="wine-price">$44<small>bottle</small></div>
+    </div>
+  </div>
+</section>
+
+<!-- BEER -->
+<section id="beer" class="sec">
+  <div class="sec-eyebrow"><span>Draft & bottles</span></div>
+  <h2>Beer <em>&</em> draft</h2>
+  <p class="sec-desc">16oz pours · rotating local taps · ask your bartender what's on</p>
+  <div class="beer-grid">
+    <div class="beer-card">
+      <div class="beer-style">Draft · 16oz</div>
+      <div class="beer-name">Guinness Draught</div>
+      <div class="beer-origin">Dublin, Ireland · Roasted malt, coffee notes, cream finish</div>
+      <div class="beer-footer"><span class="abv">4.2% ABV</span><span class="card-price">$9</span></div>
+    </div>
+    <div class="beer-card">
+      <div class="beer-style">Draft · 16oz</div>
+      <div class="beer-name">Southern Tier IPA</div>
+      <div class="beer-origin">Lakewood, NY · Citrus forward, piney bitterness</div>
+      <div class="beer-footer"><span class="abv">6.8% ABV</span><span class="card-price">$8</span></div>
+    </div>
+    <div class="beer-card">
+      <div class="beer-style">Draft · 16oz</div>
+      <div class="beer-name">Blue Moon Belgian White</div>
+      <div class="beer-origin">Golden, CO · Wheat ale, orange peel, coriander</div>
+      <div class="beer-footer"><span class="abv">5.4% ABV</span><span class="card-price">$8</span></div>
+    </div>
+    <div class="beer-card">
+      <div class="beer-style">Bottle</div>
+      <div class="beer-name">Corona Extra</div>
+      <div class="beer-origin">Mexico · Light, crisp, mild hop character</div>
+      <div class="beer-footer"><span class="abv">4.6% ABV</span><span class="card-price">$6</span></div>
+    </div>
+    <div class="beer-card">
+      <div class="beer-style">Bottle</div>
+      <div class="beer-name">Heineken</div>
+      <div class="beer-origin">Netherlands · Pale lager, mild malt, clean finish</div>
+      <div class="beer-footer"><span class="abv">5.0% ABV</span><span class="card-price">$6</span></div>
+    </div>
+    <div class="beer-card">
+      <div class="beer-style">Bottle · Local</div>
+      <div class="beer-name">Flying Bison Rusty Chain</div>
+      <div class="beer-origin">Orchard Park, NY · Red ale, caramel malt, smooth</div>
+      <div class="beer-footer"><span class="abv">5.5% ABV</span><span class="card-price">$7</span><span class="badge badge-local">Local</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- COCKTAILS -->
+<section id="cocktails" class="sec alt">
+  <div class="sec-inner">
+    <div class="sec-eyebrow"><span>Handcrafted to order</span></div>
+    <h2>Signature <em>cocktails</em></h2>
+    <p class="sec-desc">Ask your bartender to customize any drink · Split pours welcome</p>
+    <div class="card-grid">
+      <div class="menu-card">
+        <div class="card-cat">Signature</div>
+        <div class="card-name">Bistro Negroni</div>
+        <div class="card-desc">House-infused gin, Campari, sweet vermouth, expressed orange peel</div>
+        <div class="card-footer"><span class="card-price">$14</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="card-cat">Signature</div>
+        <div class="card-name">Lavender Mule</div>
+        <div class="card-desc">Tito's vodka, house lavender syrup, fresh lime, ginger beer, crystallized lavender rim</div>
+        <div class="card-footer"><span class="card-price">$13</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="card-cat">Signature</div>
+        <div class="card-name">Dark & Spicy Paloma</div>
+        <div class="card-desc">Mezcal, fresh grapefruit, jalapeño honey, Tajín rim, charred citrus</div>
+        <div class="card-footer"><span class="card-price">$15</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="card-cat">Classic</div>
+        <div class="card-name">Aperol Spritz</div>
+        <div class="card-desc">Aperol, La Marca Prosecco, splash of soda, orange slice</div>
+        <div class="card-footer"><span class="card-price">$13</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="card-cat">Classic</div>
+        <div class="card-name">Espresso Martini</div>
+        <div class="card-desc">Vanilla vodka, Kahlúa, fresh-pulled espresso, three coffee beans</div>
+        <div class="card-footer"><span class="card-price">$14</span></div>
+      </div>
+      <div class="menu-card">
+        <div class="card-cat">Low ABV</div>
+        <div class="card-name">Garden Gimlet</div>
+        <div class="card-desc">St. Germain elderflower, cucumber, fresh lime, soda, mint sprig</div>
+        <div class="card-footer"><span class="card-price">$12</span><span class="badge badge-gf">GF</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPIRITS -->
+<section id="spirits" class="sec">
+  <div class="sec-eyebrow"><span>Poured neat, rocks, or built</span></div>
+  <h2>Spirits <em>selection</em></h2>
+  <p class="sec-desc">Ask about our premium pour upgrades for any cocktail</p>
+  <div class="card-grid">
+    <div class="menu-card">
+      <div class="card-cat">Bourbon</div>
+      <div class="card-name">Bulleit Bourbon</div>
+      <div class="card-desc">High rye mash, spicy, oaky, with hints of vanilla and dried fruit</div>
+      <div class="card-footer"><span class="card-price">$11</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">Scotch</div>
+      <div class="card-name">Glenfiddich 12yr</div>
+      <div class="card-desc">Speyside single malt, pear, subtle oak, fresh and fruity finish</div>
+      <div class="card-footer"><span class="card-price">$14</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">Tequila</div>
+      <div class="card-name">Patrón Silver</div>
+      <div class="card-desc">100% blue agave, crisp citrus, light pepper, smooth finish</div>
+      <div class="card-footer"><span class="card-price">$12</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">Mezcal</div>
+      <div class="card-name">Del Maguey Vida</div>
+      <div class="card-desc">Oaxaca, roasted agave, smoke, tropical fruit, mineral earthiness</div>
+      <div class="card-footer"><span class="card-price">$13</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOD -->
+<section id="food" class="sec alt">
+  <div class="sec-inner">
+    <div class="sec-eyebrow"><span>Kitchen open until 9pm · Wed – Sat</span></div>
+    <h2>Food <em>menu</em></h2>
+    <p class="sec-desc">Bar bites, small plates & full entrées · GF options available</p>
+    <div class="food-cols">
+      <div class="food-item">
+        <div class="food-cat">Small plates</div>
+        <div class="food-name">Truffle Parmesan Fries</div>
+        <div class="food-desc">Shoestring fries, black truffle oil, shaved parmesan, fresh herbs</div>
+        <div class="food-price">$12</div>
+      </div>
+      <div class="food-item">
+        <div class="food-cat">Small plates</div>
+        <div class="food-name">Charcuterie Board</div>
+        <div class="food-desc">Chef's selection of cured meats, artisan cheeses, house pickles, whole grain mustard, crostini</div>
+        <div class="food-price">$22</div>
+      </div>
+      <div class="food-item">
+        <div class="food-cat">Small plates</div>
+        <div class="food-name">Burrata & Heirloom Tomato</div>
+        <div class="food-desc">Fresh burrata, heirloom tomatoes, basil oil, flake salt, toasted sourdough</div>
+        <div class="food-price">$16</div>
+      </div>
+      <div class="food-item">
+        <div class="food-cat">Entrée</div>
+        <div class="food-name">Pan-Seared Salmon</div>
+        <div class="food-desc">Atlantic salmon, lemon beurre blanc, haricots verts, fingerling potatoes</div>
+        <div class="food-price">$28</div>
+      </div>
+      <div class="food-item">
+        <div class="food-cat">Entrée</div>
+        <div class="food-name">Bistro Burger</div>
+        <div class="food-desc">8oz house blend, aged cheddar, caramelized onion, bistro sauce, brioche bun, frites</div>
+        <div class="food-price">$19</div>
+      </div>
+      <div class="food-item">
+        <div class="food-cat">Entrée</div>
+        <div class="food-name">Wild Mushroom Risotto</div>
+        <div class="food-desc">Arborio, mixed wild mushrooms, truffle oil, parmesan, fresh thyme · GF</div>
+        <div class="food-price">$22</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- N/A DRINKS -->
+<section id="na" class="sec">
+  <div class="sec-eyebrow"><span>Zero proof</span></div>
+  <h2>N/A <em>drinks</em></h2>
+  <p class="sec-desc">Crafted with the same care as our cocktail menu</p>
+  <div class="card-grid">
+    <div class="menu-card">
+      <div class="card-cat">Zero proof</div>
+      <div class="card-name">Seedlip Spiced Sour</div>
+      <div class="card-desc">Seedlip Spice 94, fresh lemon, aquafaba foam, aromatic bitters</div>
+      <div class="card-footer"><span class="card-price">$9</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">Zero proof</div>
+      <div class="card-name">Cucumber Mint Cooler</div>
+      <div class="card-desc">Fresh cucumber, mint, elderflower, lime, sparkling water</div>
+      <div class="card-footer"><span class="card-price">$7</span></div>
+    </div>
+    <div class="menu-card">
+      <div class="card-cat">House made</div>
+      <div class="card-name">House Lemonade</div>
+      <div class="card-desc">Fresh-squeezed, honey sweetened · Ask about today's flavor add-in</div>
+      <div class="card-footer"><span class="card-price">$5</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer" id="hours">
+  <div class="footer-logo">Mario Bistro & Brews</div>
+  <p class="footer-tagline">Orchard Park's favorite pour</p>
+  <div class="footer-rule"></div>
+  <div class="footer-info" id="contact">
+    4211 North Buffalo Rd · Orchard Park, NY 14127<br>
+    Wednesday – Saturday &nbsp;·&nbsp; 4:00 pm – Close<br>
+    Kitchen closes at 9:00 pm · Dinner Wed – Sat<br><br>
+    (716) 740-8080 &nbsp;·&nbsp; mariobistrobrews@gmail.com<br>
+    mariobistrobrews.com
+  </div>
+  <div id="reservations" style="height:1px"></div>
+  <div style="margin-top:28px;padding:18px 22px;border:1px solid #3d2010;border-radius:2px;text-align:center">
+    <p style="font-family:'Josefin Sans',sans-serif;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#7a5c40;margin-bottom:10px">Looking for a reservation?</p>
+    <a href="https://tables.toasttab.com/restaurants/581c9021-90e0-49f5-a12e-e21bc2c60f8b/reserve?partySize=2&dateTime=2026-05-30T13:30:00.000-04:00" target="_blank" class="btn-gold" style="display:inline-block;text-decoration:none">Book a table via Toast</a>
+    <p style="font-family:'Josefin Sans',sans-serif;font-size:11px;color:#4a3020;margin-top:10px">or visit <a href="https://mariobistrobrews.com" style="color:#c9a84c">mariobistrobrews.com</a></p>
+  </div>
+  <p class="footer-copy">© 2024 Mario Bistro Brews · All rights reserved · Demo page — not for public distribution</p>
+</footer>
+
+<script>
+  // Sticky nav active tab on click
+  document.querySelectorAll('.snav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.snav-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Highlight active section on scroll
+  const sections = ['specials','wine','beer','cocktails','spirits','food','na'];
+  const tabs = document.querySelectorAll('.snav-tab');
+  window.addEventListener('scroll', () => {
+    let current = 'specials';
+    sections.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 140) current = id;
+    });
+    tabs.forEach(t => {
+      t.classList.toggle('active', t.getAttribute('href') === '#' + current);
+    });
+  }, { passive: true });
+
+  // Approval banner actions
+  function handleApprove() {
+    const name = prompt('Your name (optional):') || 'Team member';
+    const subject = encodeURIComponent('APPROVED — Mario Bistro Brews menu demo');
+    const body = encodeURIComponent('Hi Mario,\n\nI approve the Mario Bistro Brews menu demo page.\n\n— ' + name);
+    const bar = document.querySelector('.approval-bar');
+    bar.style.background = '#0e2a0e';
+    bar.innerHTML = '<strong style="color:#a3d4a3">✓ Opening your email app — thank you!</strong>';
+    setTimeout(function() {
+      window.location.href = 'mailto:mariobistrobrews@gmail.com?subject=' + subject + '&body=' + body;
+    }, 300);
+  }
+
+  function openComment()  { document.getElementById('commentBox').classList.add('open'); }
+  function closeComment() { document.getElementById('commentBox').classList.remove('open'); }
+
+  function sendComment() {
+    const name = document.getElementById('feedbackName').value.trim() || 'Team member';
+    const txt  = document.getElementById('commentText').value.trim();
+    if (!txt) { alert('Please enter your feedback first.'); return; }
+    const subject = encodeURIComponent('Menu demo feedback from ' + name);
+    const body    = encodeURIComponent('Hi Mario,\n\nFeedback from: ' + name + '\n\n' + txt + '\n\nPage: mariobistrobrews.com/menu');
+    closeComment();
+    const bar = document.querySelector('.approval-bar');
+    bar.style.background = '#1a1008';
+    bar.innerHTML = '<strong style="color:#c9a84c">✓ Opening your email app — thank you, ' + name + '!</strong>';
+    setTimeout(function() {
+      window.location.href = 'mailto:mariobistrobrews@gmail.com?subject=' + subject + '&body=' + body;
+    }, 300);
+  }
+</script>
+</body>
+</html>
