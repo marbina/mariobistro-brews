@@ -33,10 +33,10 @@ async function sb(path, options = {}) {
 
 // ── Middleware ─────────────────────────────────────────────────────
 // Public API routes — allow any origin (customer menu on HostGator)
-app.use('/api/menu', cors());
-app.use('/api/dinner', cors());
-app.use('/api/specials', cors());
-app.use('/api/settings', cors());
+app.use('/api/menu', cors({origin: '*'}));
+app.use('/api/dinner', cors({origin: '*'}));
+app.use('/api/specials', cors({origin: '*'}));
+app.use('/api/settings', cors({origin: '*'}));
 
 // Admin routes — restricted origins only
 app.use(cors({
@@ -63,7 +63,7 @@ const requireAuth = (req, res, next) => {
 };
 
 // ── Category groups ───────────────────────────────────────────────
-const BAR_CATEGORIES     = ['wine','beer','cocktail','spirit','food','na','special','small_plate','pizza','panini','pasta','soup_salad','dinner_special','brunch','beverage'];
+const BAR_CATEGORIES = ['wine','beer','cocktail','spirit','na','special','lunch_pizza','lunch_panini','lunch_small_plate','lunch_soup_salad','dinner_special','dinner_pasta','dinner_pizza','dinner_small_plate','brunch','beverage'];
 const DINNER_CATEGORIES  = ['pizza','panini','small_plate','pasta','soup_salad','dinner_special','brunch','beverage'];
 const ALL_CATEGORIES     = [...BAR_CATEGORIES, ...DINNER_CATEGORIES];
 
