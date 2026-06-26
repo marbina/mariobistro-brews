@@ -10,7 +10,6 @@ const PIN  = process.env.ADMIN_PIN || '1234';
 const SUPABASE_URL     = process.env.SUPABASE_URL     || 'https://vwfngwhgpjvwndufyzfz.supabase.co';
 const SUPABASE_SERVICE = process.env.SUPABASE_SERVICE || '';
 
-// ── Supabase fetch helper ──────────────────────────────────────────
 async function sb(path, options = {}) {
   const url = `${SUPABASE_URL}/rest/v1${path}`;
   const res = await fetch(url, {
@@ -31,14 +30,13 @@ async function sb(path, options = {}) {
   return text ? JSON.parse(text) : [];
 }
 
-// ── Middleware ─────────────────────────────────────────────────────
-// Public API routes — allow any origin (customer menu on HostGator)
-app.use('/api/menu', cors({origin: '*'}));
-app.use('/api/dinner', cors({origin: '*'}));
+app.use('/api/menu',     cors({origin: '*'}));
+app.use('/api/dinner',   cors({origin: '*'}));
 app.use('/api/specials', cors({origin: '*'}));
 app.use('/api/settings', cors({origin: '*'}));
+app.use('/api/vendors',  cors({origin: '*'}));
+app.use('/api/stories',  cors({origin: '*'}));
 
-// Admin routes — restricted origins only
 app.use(cors({
   origin: [
     'https://admin.mariobistrobrews.com',
@@ -62,14 +60,121 @@ const requireAuth = (req, res, next) => {
   res.status(401).json({ error: 'Unauthorized' });
 };
 
+// ── PUBLIC VENDORS ────────────────────────────────────────────────
+app.get('/api/vendors', async (req, res) => {
+  try {
+    const vendors = await sb('/vendors?active=eq.true&order=display_order.asc');
+    res.json(vendors);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── VENDOR CRUD ───────────────────────────────────────────────────
+app.post('/api/admin/vendors', requireAuth, async (req, res) => {
+  try {
+    const response = await fetch(SUPABASE_URL + '/rest/v1/vendors', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': 'Bearer ' + SUPABASE_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify(req.body)
+    });
+    res.json(await response.json());
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.put('/api/admin/vendors/:id', requireAuth, async (req, res) => {
+  try {
+    const response = await fetch(SUPABASE_URL + '/rest/v1/vendors?id=eq.' + req.params.id, {
+      method: 'PATCH',
+      headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': 'Bearer ' + SUPABASE_SERVICE, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+      body: JSON.stringify(req.body)
+    });
+    res.json(await response.json());
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/vendors/:id', requireAuth, async (req, res) => {
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/vendors?id=eq.' + req.params.id, {
+      method: 'DELETE',
+      headers: { 'apikey': SUPABASE_SERVICE, 'Authorization': 'Bearer ' + SUPABASE_SERVICE }
+    });
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── PUBLIC STORIES ────────────────────────────────────────────────
+
+// POST — customer submits
+app.post('/api/stories', async (req, res) => {
+  try {
+    const { category, story, dish_name, name, phone } = req.body;
+    if (!story || !story.trim()) return res.status(400).json({ error: 'Story is required' });
+    const display_name = name ? name.trim().split(' ')[0] : null;
+    const record = {
+      category: category || 'other',
+      story: story.trim(),
+      dish_name: dish_name || null,
+      name: name || null,
+      display_name,
+      phone: phone || null,
+      status: 'pending'
+    };
+    const result = await sb('/customer_stories', { method: 'POST', body: JSON.stringify(record) });
+    res.json({ ok: true, id: result[0]?.id });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET approved stories for menu
+app.get('/api/stories/featured', async (req, res) => {
+  try {
+    const now = new Date().toISOString();
+    const stories = await sb(`/customer_stories?status=eq.approved&or=(expires_at.is.null,expires_at.gt.${now})&order=created_at.desc&limit=10`);
+    res.json(stories);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// GET approved stories for homepage (show_on_homepage=true)
+app.get('/api/stories/homepage', async (req, res) => {
+  try {
+    const now = new Date().toISOString();
+    const stories = await sb(`/customer_stories?status=eq.approved&show_on_homepage=eq.true&or=(expires_at.is.null,expires_at.gt.${now})&order=created_at.desc&limit=10`);
+    res.json(stories);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ADMIN STORIES ─────────────────────────────────────────────────
+app.get('/api/admin/stories', requireAuth, async (req, res) => {
+  try {
+    const { status, category } = req.query;
+    let filter = '?order=created_at.desc';
+    if (status && status !== 'all')   filter += `&status=eq.${status}`;
+    if (category && category !== 'all') filter += `&category=eq.${category}`;
+    const stories = await sb(`/customer_stories${filter}`);
+    res.json(stories);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/admin/stories/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await sb(`/customer_stories?id=eq.${req.params.id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(req.body)
+    });
+    res.json(result[0] || { ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/stories/:id', requireAuth, async (req, res) => {
+  try {
+    await sb(`/customer_stories?id=eq.${req.params.id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Category groups ───────────────────────────────────────────────
 const BAR_CATEGORIES = ['wine','beer','cocktail','spirit','na','special','lunch_pizza','lunch_panini','lunch_small_plate','lunch_soup_salad','dinner_special','dinner_pasta','dinner_pizza','dinner_small_plate','brunch','beverage'];
-const DINNER_CATEGORIES  = ['pizza','panini','small_plate','pasta','soup_salad','dinner_special','brunch','beverage'];
-const ALL_CATEGORIES     = [...BAR_CATEGORIES, ...DINNER_CATEGORIES];
+const DINNER_CATEGORIES = ['pizza','panini','small_plate','pasta','soup_salad','dinner_special','brunch','beverage'];
 
-// ── PUBLIC API ────────────────────────────────────────────────────
-
-// GET all available bar menu items
+// ── PUBLIC MENU API ───────────────────────────────────────────────
 app.get('/api/menu', async (req, res) => {
   try {
     const cats = BAR_CATEGORIES.map(c => `category.eq.${c}`).join(',');
@@ -78,7 +183,6 @@ app.get('/api/menu', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET all available dinner items
 app.get('/api/dinner', async (req, res) => {
   try {
     const cats = DINNER_CATEGORIES.map(c => `category.eq.${c}`).join(',');
@@ -87,7 +191,6 @@ app.get('/api/dinner', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET items by specific category
 app.get('/api/menu/:category', async (req, res) => {
   try {
     const items = await sb(`/menu_items?category=eq.${req.params.category}&available=eq.true&order=sort_order`);
@@ -95,7 +198,6 @@ app.get('/api/menu/:category', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET tonight's specials (is_special = true)
 app.get('/api/specials', async (req, res) => {
   try {
     const items = await sb(`/menu_items?is_special=eq.true&available=eq.true&order=category,sort_order`);
@@ -103,7 +205,6 @@ app.get('/api/specials', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET site settings
 app.get('/api/settings', async (req, res) => {
   try {
     const rows = await sb('/site_settings?select=key,value');
@@ -116,26 +217,14 @@ app.get('/api/settings', async (req, res) => {
 // ── AUTH ──────────────────────────────────────────────────────────
 app.post('/api/auth/login', (req, res) => {
   const { pin } = req.body;
-  if (pin === PIN) {
-    req.session.authed = true;
-    res.json({ ok: true });
-  } else {
-    res.status(401).json({ error: 'Wrong PIN' });
-  }
+  if (pin === PIN) { req.session.authed = true; res.json({ ok: true }); }
+  else res.status(401).json({ error: 'Wrong PIN' });
 });
 
-app.post('/api/auth/logout', (req, res) => {
-  req.session.destroy();
-  res.json({ ok: true });
-});
+app.post('/api/auth/logout', (req, res) => { req.session.destroy(); res.json({ ok: true }); });
+app.get('/api/auth/check', (req, res) => { res.json({ authed: !!req.session.authed }); });
 
-app.get('/api/auth/check', (req, res) => {
-  res.json({ authed: !!req.session.authed });
-});
-
-// ── ADMIN API ─────────────────────────────────────────────────────
-
-// GET all items (admin, includes unavailable)
+// ── ADMIN ITEMS ───────────────────────────────────────────────────
 app.get('/api/admin/items', requireAuth, async (req, res) => {
   try {
     const { category, menu } = req.query;
@@ -149,12 +238,10 @@ app.get('/api/admin/items', requireAuth, async (req, res) => {
       const cats = DINNER_CATEGORIES.map(c => `category.eq.${c}`).join(',');
       filter = `?or=(${cats})&order=category,sort_order`;
     }
-    const items = await sb(`/menu_items${filter}`);
-    res.json(items);
+    res.json(await sb(`/menu_items${filter}`));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET single item
 app.get('/api/admin/items/:id', requireAuth, async (req, res) => {
   try {
     const items = await sb(`/menu_items?id=eq.${req.params.id}`);
@@ -162,80 +249,55 @@ app.get('/api/admin/items/:id', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// POST create item
 app.post('/api/admin/items', requireAuth, async (req, res) => {
   try {
-    const item = await sb('/menu_items', {
-      method: 'POST',
-      body: JSON.stringify(req.body)
-    });
+    const item = await sb('/menu_items', { method: 'POST', body: JSON.stringify(req.body) });
     res.json(item[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// PATCH update item
 app.patch('/api/admin/items/:id', requireAuth, async (req, res) => {
   try {
     const body = { ...req.body, updated_at: new Date().toISOString() };
-    const item = await sb(`/menu_items?id=eq.${req.params.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(body)
-    });
+    const item = await sb(`/menu_items?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
     res.json(item[0]);
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// DELETE item
 app.delete('/api/admin/items/:id', requireAuth, async (req, res) => {
   try {
-    await sb(`/menu_items?id=eq.${req.params.id}`, {
-      method: 'DELETE',
-      prefer: 'return=minimal'
-    });
+    await sb(`/menu_items?id=eq.${req.params.id}`, { method: 'DELETE', prefer: 'return=minimal' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// PATCH toggle available (86)
 app.patch('/api/admin/items/:id/toggle', requireAuth, async (req, res) => {
   try {
     const current = await sb(`/menu_items?id=eq.${req.params.id}&select=available`);
-    const newVal  = !current[0].available;
-    await sb(`/menu_items?id=eq.${req.params.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ available: newVal, updated_at: new Date().toISOString() })
-    });
+    const newVal = !current[0].available;
+    await sb(`/menu_items?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ available: newVal, updated_at: new Date().toISOString() }) });
     res.json({ available: newVal });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// PATCH toggle special
 app.patch('/api/admin/items/:id/special', requireAuth, async (req, res) => {
   try {
     const current = await sb(`/menu_items?id=eq.${req.params.id}&select=is_special`);
-    const newVal  = !current[0].is_special;
-    await sb(`/menu_items?id=eq.${req.params.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ is_special: newVal, updated_at: new Date().toISOString() })
-    });
+    const newVal = !current[0].is_special;
+    await sb(`/menu_items?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify({ is_special: newVal, updated_at: new Date().toISOString() }) });
     res.json({ is_special: newVal });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// PATCH update settings
 app.patch('/api/admin/settings', requireAuth, async (req, res) => {
   try {
     for (const [key, value] of Object.entries(req.body)) {
-      await sb(`/site_settings?key=eq.${key}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ value, updated_at: new Date().toISOString() })
-      });
+      await sb(`/site_settings?key=eq.${key}`, { method: 'PATCH', body: JSON.stringify({ value, updated_at: new Date().toISOString() }) });
     }
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// ── Serve admin panel ─────────────────────────────────────────────
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

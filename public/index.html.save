@@ -96,10 +96,6 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
 .toast.error{border-color:#4a1a1a;color:#c06060}
 .empty{text-align:center;padding:48px 24px;color:var(--muted)}
 .loading{text-align:center;padding:40px;color:var(--muted);font-size:11px;letter-spacing:2px;text-transform:uppercase}
-
-.story-filter{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 12px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:var(--radius);transition:color .15s,border-color .15s}
-.story-filter.active{color:var(--gold);border-color:var(--goldd)}
-
 </style>
 </head>
 <body>
@@ -142,7 +138,6 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
     <div class="msw-tab" id="msw-dinner" onclick="switchMenu('dinner')">🍕 Dinner menu</div>
     <div class="msw-tab" id="msw-settings" onclick="switchMenu('settings')">⚙ Settings</div>
     <div class="msw-tab" id="msw-vendors" onclick="switchMenu('vendors')">🤝 Vendors</div>
-    <div class="msw-tab" id="msw-stories" onclick="switchMenu('stories')">💬 Stories</div>
   </div>
   <div class="main" id="main-content">
     <div class="loading">Loading...</div>
@@ -247,10 +242,10 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
       </select>
     </div>
     <div class="form-row" id="vendor-row">
-      <label class="form-label">Curated partners (optional)</label>
-      <div id="f-vendors-checks" style="display:flex;flex-direction:column;gap:8px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);min-height:42px">
-        <div style="font-size:11px;color:var(--muted)">Loading...</div>
-      </div>
+      <label class="form-label">Vendor (optional)</label>
+      <select class="form-select" id="f-vendor">
+        <option value="">— None —</option>
+      </select>
     </div>
     <div class="form-row">
       <label class="form-label">Badge (optional)</label>
@@ -328,9 +323,6 @@ function switchMenu(menu){
     barNav.style.display='none'; dinnerNav.style.display='none';
     document.getElementById('main-content').innerHTML = '<div id="vendors-list"><div class="loading">Loading...</div></div><button onclick="openVendorModal(null)" style="margin:16px auto;display:block;background:var(--gold);color:var(--bg);border:none;padding:12px 24px;font-family:Josefin Sans,sans-serif;font-size:11px;letter-spacing:1.5px;cursor:pointer;border-radius:4px">+ Add Vendor</button>';
     loadVendors();
-  } else if(menu === 'stories'){
-    barNav.style.display='none'; dinnerNav.style.display='none';
-    renderStories();
   } else if(menu === 'settings'){
     barNav.style.display='none'; dinnerNav.style.display='none';
     renderSettings();
@@ -464,10 +456,11 @@ async function openModal(id,defaultCat){
       document.getElementById('f-badge').value=item.badge||'';
       document.getElementById('f-category').value=item.category||'cocktail';
       document.getElementById('f-wine-type').value=item.wine_type||'red';
+document.getElementById('f-vendor').value=item.vendor_id||'';      
+document.getElementById('f-vendor').value=item.vendor_id||'';
       document.getElementById('f-available').checked=item.available;
       document.getElementById('f-special').checked=item.is_special;
       toggleWineType(item.category);
-      await loadVendorDropdown(item.vendor_ids || (item.vendor_id ? [item.vendor_id] : []));
     }catch(e){showToast('Error loading item','error');return;}
   } else {
     document.getElementById('f-name').value='';
@@ -477,11 +470,12 @@ async function openModal(id,defaultCat){
     const cat = defaultCat||currentSection||'cocktail';
     document.getElementById('f-category').value=cat;
     document.getElementById('f-wine-type').value='red';
+    document.getElementById('f-vendor').value='';
     document.getElementById('f-available').checked=true;
     document.getElementById('f-special').checked=false;
     toggleWineType(cat);
-    await loadVendorDropdown([]);
   }
+  loadVendorDropdown();
   document.getElementById('item-modal').classList.add('open');
 }
 
@@ -493,7 +487,7 @@ async function saveItem(){
     description:document.getElementById('f-desc').value.trim(),
     price:parseFloat(document.getElementById('f-price').value)||null,
     badge:document.getElementById('f-badge').value.trim()||null,
-    vendor_ids:Array.from(document.querySelectorAll('#f-vendors-checks input[type=checkbox]:checked')).map(cb=>parseInt(cb.value)),
+    vendor_id:document.getElementById('f-vendor').value ? parseInt(document.getElementById('f-vendor').value) : null,
     wine_type:document.getElementById('f-wine-type').value||null,
     category:document.getElementById('f-category').value,
     available:document.getElementById('f-available').checked,
@@ -571,189 +565,6 @@ async function savePin(){
   }catch(e){showToast('Error: '+e.message,'error');}
 }
 
-
-// ── STORIES ──────────────────────────────────────────────────────
-async function renderStories() {
-  const main = document.getElementById('main-content');
-  main.innerHTML = '<div class="loading">Loading stories...</div>';
-  try {
-    const r = await fetch(API + '/api/admin/stories', { credentials: 'include' });
-    const stories = await r.json();
-    const pending  = stories.filter(s => s.status === 'pending').length;
-    const approved = stories.filter(s => s.status === 'approved').length;
-    const withPhone = stories.filter(s => s.phone).length;
-    let html = `
-      <div class="sec-header">
-        <div class="sec-title">Customer Stories</div>
-      </div>
-      <div class="stats-bar" style="margin-bottom:16px">
-        <div class="stat"><div class="stat-num">${stories.length}</div><div class="stat-label">Total</div></div>
-        <div class="stat"><div class="stat-num" style="color:#c06060">${pending}</div><div class="stat-label">Pending</div></div>
-        <div class="stat"><div class="stat-num" style="color:#7ab87a">${approved}</div><div class="stat-label">Approved</div></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
-        <button onclick="filterStories('all')" id="sf-all" class="story-filter active">All</button>
-        <button onclick="filterStories('pending')" id="sf-pending" class="story-filter">⏳ Pending</button>
-        <button onclick="filterStories('approved')" id="sf-approved" class="story-filter">✓ Approved</button>
-        <button onclick="filterStories('rejected')" id="sf-rejected" class="story-filter">✕ Rejected</button>
-        <button onclick="filterStories('archived')" id="sf-archived" class="story-filter">📦 Archived</button>
-      </div>`;
-    if (!stories.length) {
-      html += '<div class="empty"><p style="font-size:32px;opacity:.2;margin-bottom:12px">💬</p><p>No stories yet</p></div>';
-    } else {
-      html += '<div id="stories-list">' + renderStoryCards(stories) + '</div>';
-    }
-    main.innerHTML = html;
-  } catch(e) { main.innerHTML = `<div class="empty"><p>Error: ${e.message}</p></div>`; }
-}
-
-function renderStoryCards(stories) {
-  const cats = { food:'🍽️ Food', bar:'🍷 Bar', atmosphere:'✨ Vibe', suggestion:'💡 Idea', wine:'🍾 Wine', other:'💬 Other' };
-  const statusColors = { pending:'#c9a84c', approved:'#7ab87a', rejected:'#c06060', archived:'#4a3020' };
-  if (!stories.length) return '<div class="empty"><p>No stories here</p></div>';
-  return stories.map(s => {
-    const date = new Date(s.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
-    const isPending  = s.status === 'pending';
-    const isApproved = s.status === 'approved';
-    const expires = s.expires_at ? new Date(s.expires_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : null;
-    return `<div class="item-card" style="border-left:3px solid ${statusColors[s.status]||'var(--border)'};margin-bottom:1px" id="story-${s.id}">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
-          <span style="font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold)">${cats[s.category]||s.category}</span>
-          ${s.dish_name ? `<span style="font-size:10px;color:var(--muted)">· ${s.dish_name}</span>` : ''}
-          <span style="font-size:9px;padding:1px 6px;border-radius:2px;background:var(--bg);border:1px solid var(--border);color:${statusColors[s.status]||'var(--muted)'}">${s.status.toUpperCase()}</span>
-          ${s.show_on_homepage ? '<span style="font-size:9px;background:#0a1a0a;color:#7ab87a;border:1px solid #1a3a1a;padding:1px 6px;border-radius:2px">🏠 HOMEPAGE</span>' : ''}
-        </div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--cream);line-height:1.5;margin-bottom:8px">"${s.story}"</div>
-        ${s.mario_reply ? `<div style="font-size:12px;color:var(--gold);font-style:italic;margin-bottom:6px">👨‍🍳 "${s.mario_reply}"</div>` : ''}
-        <div style="font-size:10px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap">
-          ${s.display_name || s.name ? `<span>👤 ${s.display_name || s.name}</span>` : ''}
-          ${s.phone ? `<span>📱 ${s.phone}</span>` : ''}
-          <span>🕐 ${date}</span>
-          ${expires ? `<span>⏰ Expires ${expires}</span>` : ''}
-        </div>
-        ${isApproved ? `
-        <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input id="reply-${s.id}" value="${s.mario_reply||''}" placeholder="Mario's reply (optional)..." 
-            style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-family:'Josefin Sans',sans-serif;font-size:12px;border-radius:var(--radius)">
-          <input id="name-${s.id}" value="${s.display_name||s.name||''}" placeholder="Display name..." 
-            style="width:120px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-family:'Josefin Sans',sans-serif;font-size:12px;border-radius:var(--radius)">
-          <button onclick="saveStoryReply('${s.id}')" style="background:var(--goldd);color:var(--cream);border:none;padding:7px 12px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">Save</button>
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);cursor:pointer">
-            <input type="checkbox" ${s.show_on_homepage?'checked':''} onchange="toggleHomepage('${s.id}',this.checked)" style="accent-color:var(--gold)"> Homepage
-          </label>
-        </div>` : ''}
-        ${isPending ? `
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <input id="name-${s.id}" value="${s.display_name||s.name||''}" placeholder="Display name (first name only)..." 
-            style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-family:'Josefin Sans',sans-serif;font-size:12px;border-radius:var(--radius)">
-          <button onclick="approveStory('${s.id}')" style="background:#1a3a1a;color:#7ab87a;border:1px solid #2a4a2a;padding:7px 14px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">✓ Approve</button>
-          <button onclick="rejectStory('${s.id}')" style="background:#2a0a0a;color:#c06060;border:1px solid #4a1a1a;padding:7px 14px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">✕ Reject</button>
-        </div>` : ''}
-      </div>
-      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;margin-left:12px">
-        <button class="icon-btn danger" title="Archive" onclick="archiveStory('${s.id}')">
-          <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
-        </button>
-        <button class="icon-btn danger" title="Delete" onclick="deleteStory('${s.id}')">
-          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function filterStories(filter) {
-  document.querySelectorAll('.story-filter').forEach(b => b.classList.remove('active'));
-  document.getElementById('sf-' + filter)?.classList.add('active');
-  try {
-    let url = API + '/api/admin/stories';
-    if (filter !== 'all') {
-      if (['pending','approved','rejected','archived'].includes(filter)) {
-        url += '?status=' + filter;
-      } else {
-        url += '?category=' + filter;
-      }
-    }
-    const r = await fetch(url, { credentials: 'include' });
-    const stories = await r.json();
-    const list = document.getElementById('stories-list');
-    if (list) list.innerHTML = renderStoryCards(stories);
-  } catch(e) { showToast('Error loading stories', 'error'); }
-}
-
-async function approveStory(id) {
-  const nameEl = document.getElementById('name-' + id);
-  const display_name = nameEl ? nameEl.value.trim() : '';
-  try {
-    await fetch(API + '/api/admin/stories/' + id, {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'approved', display_name: display_name || null })
-    });
-    showToast('✓ Story approved', 'success');
-    renderStories();
-  } catch(e) { showToast('Error', 'error'); }
-}
-
-async function rejectStory(id) {
-  try {
-    await fetch(API + '/api/admin/stories/' + id, {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'rejected' })
-    });
-    showToast('Story rejected', 'success');
-    renderStories();
-  } catch(e) { showToast('Error', 'error'); }
-}
-
-async function archiveStory(id) {
-  try {
-    await fetch(API + '/api/admin/stories/' + id, {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status: 'archived' })
-    });
-    showToast('Story archived', 'success');
-    renderStories();
-  } catch(e) { showToast('Error', 'error'); }
-}
-
-async function saveStoryReply(id) {
-  const reply = document.getElementById('reply-' + id)?.value.trim() || null;
-  const display_name = document.getElementById('name-' + id)?.value.trim() || null;
-  try {
-    await fetch(API + '/api/admin/stories/' + id, {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ mario_reply: reply, display_name })
-    });
-    showToast('Saved ✓', 'success');
-    renderStories();
-  } catch(e) { showToast('Error', 'error'); }
-}
-
-async function toggleHomepage(id, show) {
-  try {
-    await fetch(API + '/api/admin/stories/' + id, {
-      method: 'PATCH', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ show_on_homepage: show })
-    });
-    showToast(show ? '🏠 Added to homepage' : 'Removed from homepage', 'success');
-  } catch(e) { showToast('Error', 'error'); }
-}
-
-async function deleteStory(id) {
-  if (!confirm('Delete this story permanently?')) return;
-  try {
-    await fetch(API + '/api/admin/stories/' + id, { method: 'DELETE', credentials: 'include' });
-    showToast('Deleted', 'success');
-    renderStories();
-  } catch(e) { showToast('Error', 'error'); }
-}
-
 // ── TOAST ─────────────────────────────────────────────────────────
 let toastTimer;
 function showToast(msg,type='success'){
@@ -767,24 +578,25 @@ document.getElementById('item-modal').addEventListener('click',function(e){if(e.
 // ── VENDORS ──────────────────────────────────────────────────────
 var editingVendorId = null;
 
-async function loadVendorDropdown(selectedIds) {
+}
+async function loadVendorDropdown(selectedId) {
   try {
     const res = await fetch('/api/vendors');
     const vendors = await res.json();
-    const container = document.getElementById('f-vendors-checks');
-    const selected = Array.isArray(selectedIds) ? selectedIds : (selectedIds ? [selectedIds] : []);
-    if (!vendors.length) {
-      container.innerHTML = '<div style="font-size:11px;color:var(--muted)">No vendors yet</div>';
-      return;
-    }
-    container.innerHTML = vendors.map(v => `
-      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:12px;color:var(--cream)">
-        <input type="checkbox" value="${v.id}" ${selected.includes(v.id) ? 'checked' : ''}
-          style="accent-color:var(--gold);width:16px;height:16px;cursor:pointer">
-        ${v.name} <span style="color:var(--muted);font-size:10px">${v.tagline||''}</span>
-      </label>`).join('');
+    const sel = document.getElementById('f-vendor');
+    sel.innerHTML = '<option value="">— None —</option>';
+    vendors.forEach(v => {
+      const o = document.createElement('option');
+      o.value = v.id;
+      o.textContent = v.name;
+      sel.appendChild(o);
+    });
+    if(selectedId) sel.value = selectedId;
   } catch(e) { console.error(e); }
 }
+
+
+
 
 async function loadVendors() {
   try {
