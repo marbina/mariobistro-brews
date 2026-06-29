@@ -143,6 +143,7 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
     <div class="msw-tab" id="msw-settings" onclick="switchMenu('settings')">⚙ Settings</div>
     <div class="msw-tab" id="msw-vendors" onclick="switchMenu('vendors')">🤝 Vendors</div>
     <div class="msw-tab" id="msw-stories" onclick="switchMenu('stories')">💬 Stories</div>
+    <div class="msw-tab" id="msw-recipes" onclick="switchMenu('recipes')">👨‍🍳 Recipes</div>
   </div>
   <div class="main" id="main-content">
     <div class="loading">Loading...</div>
@@ -163,6 +164,9 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
     </button>
     <button class="bnav-tab" onclick="showSection('food')" id="tab-food">
       <svg viewBox="0 0 24 24"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>Food
+    </button>
+    <button class="bnav-tab" onclick="showSection('canned')" id="tab-canned">
+      <svg viewBox="0 0 24 24"><path d="M8 2h8a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><line x1="12" y1="8" x2="12" y2="16"/></svg>Canned
     </button>
     <button class="bnav-tab" onclick="showSection('na')" id="tab-na">
       <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>N/A
@@ -209,8 +213,12 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
     </div>
     <div class="form-row-2">
       <div>
-        <label class="form-label">Price</label>
+        <label class="form-label">Price (glass)</label>
         <input class="form-input" id="f-price" type="number" step="0.50" placeholder="0.00">
+      </div>
+      <div>
+        <label class="form-label">Bottle price</label>
+        <input class="form-input" id="f-bottle-price" type="number" step="0.50" placeholder="0.00">
       </div>
       <div>
         <label class="form-label">Category</label>
@@ -221,6 +229,7 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
             <option value="cocktail">Cocktail</option>
             <option value="spirit">Spirit</option>
             <option value="na">N/A Drink</option>
+            <option value="canned">Canned Cocktail</option>
             <option value="special">Bar Special</option>
           </optgroup>
           <optgroup label="Dinner menu">
@@ -256,6 +265,10 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
       <label class="form-label">Badge (optional)</label>
       <input class="form-input" id="f-badge" placeholder="e.g. GF · Local · Veg · Tonight only">
     </div>
+    <div class="form-row">
+      <label class="form-label">Mario's note (optional)</label>
+      <input class="form-input" id="f-mario-note" placeholder="e.g. Try with our Barolo · Pairs beautifully with the Meat Special">
+    </div>
     <div class="form-toggles">
       <label class="toggle-label">
         <input type="checkbox" class="toggle-input" id="f-available" checked>
@@ -284,7 +297,7 @@ let editingId = null;
 
 const SECTION_LABELS = {
   special:'Bar Specials', wine:'Wine', beer:'Beer & Draft',
-  cocktail:'Cocktails & Spirits', food:'Food', na:'N/A Drinks',
+  cocktail:'Cocktails & Spirits', food:'Food', na:'N/A Drinks', canned:'Canned Cocktails',
   pizza:'Pizza', panini:'Paninis & Sandwiches', small_plate:'Small Plates',
   pasta:'Pasta', soup_salad:'Soups & Salads', dinner_special:'Dinner Specials',
   brunch:'Brunch & Morning', beverage:'Beverages', settings:'Settings'
@@ -331,6 +344,9 @@ function switchMenu(menu){
   } else if(menu === 'stories'){
     barNav.style.display='none'; dinnerNav.style.display='none';
     renderStories();
+  } else if(menu === 'recipes'){
+    barNav.style.display='none'; dinnerNav.style.display='none';
+    renderRecipes();
   } else if(menu === 'settings'){
     barNav.style.display='none'; dinnerNav.style.display='none';
     renderSettings();
@@ -390,7 +406,10 @@ async function renderSection(sec){
       items.forEach(item=>{
         const price = item.price ? `$${parseFloat(item.price).toFixed(2)}` : 'MP';
         const badges = [];
-        if(item.is_special) badges.push(`<span class="badge badge-special">★ Special</span>`);
+        if(item.is_special) {
+          const dayLabel = item.special_days === 'weekend' ? '★ Fri–Sat' : item.special_days === 'both' ? '★ All week' : '★ Weekly';
+          badges.push(`<span class="badge badge-special">${dayLabel}</span>`);
+        }
         if(!item.available) badges.push(`<span class="badge badge-off">86'd</span>`);
         if(item.badge)      badges.push(`<span class="badge badge-tag">${item.badge}</span>`);
         html += `
@@ -404,6 +423,11 @@ async function renderSection(sec){
               <button class="icon-btn ${item.is_special?'active':''}" title="Toggle special" onclick="toggleSpecial('${item.id}',this)">
                 <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
               </button>
+              ${item.is_special ? `<select onchange="updateSpecialDays('${item.id}',this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--gold);font-size:9px;padding:3px 4px;border-radius:3px;cursor:pointer;width:36px;text-align:center">
+                <option value="weekly" ${item.special_days==='weekly'||!item.special_days?'selected':''}>W</option>
+                <option value="weekend" ${item.special_days==='weekend'?'selected':''}>F/S</option>
+                <option value="both" ${item.special_days==='both'?'selected':''}>ALL</option>
+              </select>` : ''}
               <button class="icon-btn ${!item.available?'active':''}" title="${item.available?'86 item':'Restore'}" onclick="toggleAvailable('${item.id}',this)">
                 <svg viewBox="0 0 24 24">${item.available
                   ?'<path d="M1 1l22 22M16.72 11.06A10.94 10.94 0 0 1 19 12.55M5 12.55a10.94 10.94 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.56 9M1.42 9a15.91 15.91 0 0 1 4.7-2.88M15 12a3 3 0 1 1-3-3"/>'
@@ -433,13 +457,31 @@ async function toggleAvailable(id,btn){
   }catch(e){showToast('Error: '+e.message,'error');}
 }
 
+async function updateSpecialDays(id, days) {
+  try {
+    await fetch(API + '/api/admin/items/' + id, {
+      method: 'PATCH', credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ special_days: days })
+    });
+    showToast('Schedule updated ✓', 'success');
+  } catch(e) { showToast('Error', 'error'); }
+}
+
 async function toggleSpecial(id,btn){
   try{
     const r=await fetch(API+`/api/admin/items/${id}/special`,{method:'PATCH',credentials:'include'});
     const d=await r.json();
     btn.classList.toggle('active',d.is_special);
-    showToast(d.is_special?'★ Marked as special':'Removed from specials','success');
-    setTimeout(()=>renderSection(currentSection),400);
+    if(!d.is_special && currentSection==='special'){
+      const card = document.getElementById('card-'+id);
+      if(card){ card.style.transition='opacity .4s'; card.style.opacity='0'; }
+      showToast('Removed from specials','success');
+      setTimeout(()=>renderSection(currentSection),500);
+    } else {
+      showToast(d.is_special?'★ Marked as special':'Removed from specials','success');
+      setTimeout(()=>renderSection(currentSection),400);
+    }
   }catch(e){showToast('Error: '+e.message,'error');}
 }
 
@@ -461,7 +503,9 @@ async function openModal(id,defaultCat){
       document.getElementById('f-name').value=item.name||'';
       document.getElementById('f-desc').value=item.description||'';
       document.getElementById('f-price').value=item.price||'';
+      document.getElementById('f-bottle-price').value=item.bottle_price||'';
       document.getElementById('f-badge').value=item.badge||'';
+      document.getElementById('f-mario-note').value=item.mario_note||'';
       document.getElementById('f-category').value=item.category||'cocktail';
       document.getElementById('f-wine-type').value=item.wine_type||'red';
       document.getElementById('f-available').checked=item.available;
@@ -473,7 +517,9 @@ async function openModal(id,defaultCat){
     document.getElementById('f-name').value='';
     document.getElementById('f-desc').value='';
     document.getElementById('f-price').value='';
+    document.getElementById('f-bottle-price').value='';
     document.getElementById('f-badge').value='';
+    document.getElementById('f-mario-note').value='';
     const cat = defaultCat||currentSection||'cocktail';
     document.getElementById('f-category').value=cat;
     document.getElementById('f-wine-type').value='red';
@@ -492,7 +538,9 @@ async function saveItem(){
     name:document.getElementById('f-name').value.trim(),
     description:document.getElementById('f-desc').value.trim(),
     price:parseFloat(document.getElementById('f-price').value)||null,
+    bottle_price:parseFloat(document.getElementById('f-bottle-price').value)||null,
     badge:document.getElementById('f-badge').value.trim()||null,
+    mario_note:document.getElementById('f-mario-note').value.trim()||null,
     vendor_ids:Array.from(document.querySelectorAll('#f-vendors-checks input[type=checkbox]:checked')).map(cb=>parseInt(cb.value)),
     wine_type:document.getElementById('f-wine-type').value||null,
     category:document.getElementById('f-category').value,
@@ -624,7 +672,7 @@ function renderStoryCards(stories) {
           <span style="font-size:9px;padding:1px 6px;border-radius:2px;background:var(--bg);border:1px solid var(--border);color:${statusColors[s.status]||'var(--muted)'}">${s.status.toUpperCase()}</span>
           ${s.show_on_homepage ? '<span style="font-size:9px;background:#0a1a0a;color:#7ab87a;border:1px solid #1a3a1a;padding:1px 6px;border-radius:2px">🏠 HOMEPAGE</span>' : ''}
         </div>
-        <div style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--cream);line-height:1.5;margin-bottom:8px">"${s.story}"</div>
+        <div style="font-family:var(--font-serif,serif);font-size:16px;color:var(--cream);line-height:1.5;margin-bottom:8px">"${s.story}"</div>
         ${s.mario_reply ? `<div style="font-size:12px;color:var(--gold);font-style:italic;margin-bottom:6px">👨‍🍳 "${s.mario_reply}"</div>` : ''}
         <div style="font-size:10px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap">
           ${s.display_name || s.name ? `<span>👤 ${s.display_name || s.name}</span>` : ''}
@@ -635,10 +683,10 @@ function renderStoryCards(stories) {
         ${isApproved ? `
         <div style="margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <input id="reply-${s.id}" value="${s.mario_reply||''}" placeholder="Mario's reply (optional)..." 
-            style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-family:'Josefin Sans',sans-serif;font-size:12px;border-radius:var(--radius)">
+            style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-size:12px;border-radius:var(--radius)">
           <input id="name-${s.id}" value="${s.display_name||s.name||''}" placeholder="Display name..." 
-            style="width:120px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-family:'Josefin Sans',sans-serif;font-size:12px;border-radius:var(--radius)">
-          <button onclick="saveStoryReply('${s.id}')" style="background:var(--goldd);color:var(--cream);border:none;padding:7px 12px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">Save</button>
+            style="width:120px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-size:12px;border-radius:var(--radius)">
+          <button onclick="saveStoryReply('${s.id}')" style="background:var(--goldd);color:var(--cream);border:none;padding:7px 12px;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">Save</button>
           <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);cursor:pointer">
             <input type="checkbox" ${s.show_on_homepage?'checked':''} onchange="toggleHomepage('${s.id}',this.checked)" style="accent-color:var(--gold)"> Homepage
           </label>
@@ -646,9 +694,9 @@ function renderStoryCards(stories) {
         ${isPending ? `
         <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
           <input id="name-${s.id}" value="${s.display_name||s.name||''}" placeholder="Display name (first name only)..." 
-            style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-family:'Josefin Sans',sans-serif;font-size:12px;border-radius:var(--radius)">
-          <button onclick="approveStory('${s.id}')" style="background:#1a3a1a;color:#7ab87a;border:1px solid #2a4a2a;padding:7px 14px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">✓ Approve</button>
-          <button onclick="rejectStory('${s.id}')" style="background:#2a0a0a;color:#c06060;border:1px solid #4a1a1a;padding:7px 14px;font-family:'Josefin Sans',sans-serif;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">✕ Reject</button>
+            style="flex:1;min-width:160px;background:var(--bg);border:1px solid var(--border);color:var(--cream);padding:7px 10px;font-size:12px;border-radius:var(--radius)">
+          <button onclick="approveStory('${s.id}')" style="background:#1a3a1a;color:#7ab87a;border:1px solid #2a4a2a;padding:7px 14px;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">✓ Approve</button>
+          <button onclick="rejectStory('${s.id}')" style="background:#2a0a0a;color:#c06060;border:1px solid #4a1a1a;padding:7px 14px;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:var(--radius)">✕ Reject</button>
         </div>` : ''}
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;margin-left:12px">
@@ -751,6 +799,306 @@ async function deleteStory(id) {
     await fetch(API + '/api/admin/stories/' + id, { method: 'DELETE', credentials: 'include' });
     showToast('Deleted', 'success');
     renderStories();
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+
+// ── RECIPES ──────────────────────────────────────────────────────
+var editingRecipeId = null;
+
+async function renderRecipes() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '<div class="loading">Loading recipes...</div>';
+  try {
+    const r = await fetch(API + '/api/admin/recipes', { credentials: 'include' });
+    const recipes = await r.json();
+    const full  = recipes.filter(r => r.type === 'full').length;
+    const story = recipes.filter(r => r.type === 'story').length;
+
+    let html = `
+      <div class="sec-header">
+        <div class="sec-title">Mario's Kitchen</div>
+        <button class="btn-add" onclick="openRecipeModal(null)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Recipe
+        </button>
+      </div>
+      <div class="stats-bar" style="margin-bottom:16px">
+        <div class="stat"><div class="stat-num">${recipes.length}</div><div class="stat-label">Total</div></div>
+        <div class="stat"><div class="stat-num">${full}</div><div class="stat-label">Full recipes</div></div>
+        <div class="stat"><div class="stat-num">${story}</div><div class="stat-label">Story cards</div></div>
+      </div>`;
+
+    if (!recipes.length) {
+      html += '<div class="empty"><p style="font-size:32px;opacity:.2;margin-bottom:12px">👨‍🍳</p><p>No recipes yet</p></div>';
+    } else {
+      html += '<div class="item-list">';
+      recipes.forEach(rec => {
+        html += `<div class="item-card" id="recipe-${rec.id}">
+          <div class="item-main" onclick="openRecipeModal('${rec.id}')">
+            <div class="item-name">${rec.title}</div>
+            <div class="item-desc">${rec.story ? rec.story.substring(0,100) + '...' : ''}</div>
+            <div class="item-meta">
+              <span class="badge ${rec.type === 'full' ? 'badge-special' : 'badge-tag'}">${rec.type === 'full' ? '📋 Full recipe' : '📖 Story card'}</span>
+              ${rec.serves ? `<span style="font-size:11px;color:var(--muted)">Serves ${rec.serves}</span>` : ''}
+              ${!rec.active ? '<span class="badge badge-off">Inactive</span>' : ''}
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="icon-btn danger" onclick="deleteRecipe('${rec.id}')">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    main.innerHTML = html;
+  } catch(e) { main.innerHTML = `<div class="empty"><p>Error: ${e.message}</p></div>`; }
+}
+
+async function openRecipeModal(id) {
+  editingRecipeId = id;
+
+  // Fetch menu items for linking
+  const itemsRes = await fetch(API + '/api/admin/items', { credentials: 'include' });
+  const items = await itemsRes.json();
+
+  let rec = null;
+  if (id) {
+    const r = await fetch(API + '/api/admin/recipes/' + id, { credentials: 'include' });
+    rec = await r.json();
+  }
+
+  const ingredientsList = rec && rec.ingredients ? rec.ingredients.map((ing, i) =>
+    `<div class="recipe-ing-row" id="ing-${i}" style="display:flex;gap:8px;margin-bottom:8px">
+      <input class="form-input" style="width:80px" placeholder="Amount" value="${ing.amount||''}">
+      <input class="form-input" style="flex:1" placeholder="Ingredient" value="${ing.item||''}">
+      <button onclick="this.parentElement.remove()" style="background:transparent;border:1px solid #4a1a1a;color:#c06060;padding:6px 10px;cursor:pointer;border-radius:4px;font-size:11px">✕</button>
+    </div>`
+  ).join('') : '';
+
+  const stepsList = rec && rec.steps ? rec.steps.map((step, i) =>
+    `<div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-start">
+      <span style="font-size:11px;color:var(--muted);padding-top:10px;min-width:20px">${i+1}.</span>
+      <textarea class="form-input recipe-step" style="flex:1;height:60px">${step}</textarea>
+      <button onclick="this.parentElement.remove()" style="background:transparent;border:1px solid #4a1a1a;color:#c06060;padding:6px 10px;cursor:pointer;border-radius:4px;font-size:11px;margin-top:2px">✕</button>
+    </div>`
+  ).join('') : '';
+
+  const groups = {
+    'Specials': ['special','dinner_special'],
+    'Pasta & Mains': ['pasta','dinner_pasta'],
+    'Pizza': ['pizza','dinner_pizza','lunch_pizza'],
+    'Small Plates': ['small_plate','dinner_small_plate','lunch_small_plate'],
+    'Paninis': ['panini','lunch_panini'],
+    'Soups & Salads': ['soup_salad','lunch_soup_salad'],
+    'Brunch': ['brunch'],
+    'Wine': ['wine'],
+    'Beer': ['beer'],
+    'Cocktails': ['cocktail'],
+    'Spirits': ['spirit'],
+    'N/A': ['na'],
+    'Beverages': ['beverage']
+  };
+  const itemOptions = Object.entries(groups).map(([label, cats]) => {
+    const groupItems = items.filter(i => cats.includes(i.category));
+    if (!groupItems.length) return '';
+    return `<optgroup label="${label}">${groupItems.map(i => `<option value="${i.id}" ${rec && rec.menu_item_id === i.id ? 'selected' : ''}>${i.name}</option>`).join('')}</optgroup>`;
+  }).join('');
+
+  const modalHtml = `
+    <div id="recipe-modal-bg" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeRecipeModal()">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;max-width:600px;margin:0 auto;padding:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-size:22px;color:var(--cream);font-family:var(--font-serif,serif)">${id ? 'Edit Recipe' : 'New Recipe'}</div>
+          <button onclick="closeRecipeModal()" style="background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Recipe title *</label>
+          <input class="form-input" id="rec-title" value="${rec ? rec.title||'' : ''}" placeholder="e.g. Mario's Vodka Sauce">
+        </div>
+
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Type</label>
+            <select class="form-select" id="rec-type" onchange="toggleRecipeType(this.value)">
+              <option value="full" ${!rec || rec.type === 'full' ? 'selected' : ''}>📋 Full recipe</option>
+              <option value="story" ${rec && rec.type === 'story' ? 'selected' : ''}>📖 Story card</option>
+              <option value="pairing" ${rec && rec.type === 'pairing' ? 'selected' : ''}>🍷 Pairing</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Linked menu item</label>
+            <select class="form-select" id="rec-item">
+              <option value="">— None —</option>
+              ${itemOptions}
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row" id="rec-pairing-row" style="display:none">
+          <label class="form-label">Pairs with (wine, beer, or cocktail)</label>
+          <select class="form-select" id="rec-pairing-item">
+            <option value="">— Select drink —</option>
+            ${Object.entries({
+              'Wine': ['wine'],
+              'Beer': ['beer'],
+              'Cocktails': ['cocktail'],
+              'Spirits': ['spirit']
+            }).map(([label, cats]) => {
+              const groupItems = items.filter(i => cats.includes(i.category));
+              if (!groupItems.length) return '';
+              return '<optgroup label="' + label + '">' + groupItems.map(i => '<option value="' + i.id + '" ' + (rec && rec.pairing_item_id === i.id ? 'selected' : '') + '>' + i.name + '</option>').join('') + '</optgroup>';
+            }).join('')}
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">The story behind it</label>
+          <textarea class="form-textarea" id="rec-story" style="height:100px" placeholder="Where did this dish come from? What makes it special?">${rec ? rec.story||'' : ''}</textarea>
+        </div>
+
+        <div id="rec-full-section">
+          <div class="form-row-2">
+            <div>
+              <label class="form-label">Serves</label>
+              <input class="form-input" id="rec-serves" type="number" value="${rec ? rec.serves||'' : ''}" placeholder="4">
+            </div>
+            <div>
+              <label class="form-label">Prep time</label>
+              <input class="form-input" id="rec-prep" value="${rec ? rec.prep_time||'' : ''}" placeholder="e.g. 15 min">
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">Cook time</label>
+            <input class="form-input" id="rec-cook" value="${rec ? rec.cook_time||'' : ''}" placeholder="e.g. 30 min">
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Ingredients</label>
+            <div id="ingredients-list">${ingredientsList}</div>
+            <button onclick="addIngredient()" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 14px;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:4px">+ Add ingredient</button>
+          </div>
+
+          <div class="form-row">
+            <label class="form-label">Steps</label>
+            <div id="steps-list">${stepsList}</div>
+            <button onclick="addStep()" style="margin-top:8px;background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 14px;font-size:10px;letter-spacing:1px;cursor:pointer;border-radius:4px">+ Add step</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">Chef's note (shown at end)</label>
+          <textarea class="form-textarea" id="rec-note" placeholder="A personal tip from Mario...">${rec ? rec.chef_note||'' : ''}</textarea>
+        </div>
+
+        <div class="form-toggles">
+          <label class="toggle-label">
+            <input type="checkbox" class="toggle-input" id="rec-active" ${!rec || rec.active ? 'checked' : ''}>
+            <div class="toggle-track"></div>Active (visible on menu)
+          </label>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button onclick="closeRecipeModal()" class="btn-cancel">Cancel</button>
+          ${id ? `<button onclick="deleteRecipe('${id}',true)" class="btn-delete">Delete</button>` : ''}
+          <button onclick="saveRecipe()" class="btn-save">Save recipe</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  toggleRecipeType(rec ? rec.type || 'full' : 'full');
+}
+
+function toggleRecipeType(type) {
+  const full = document.getElementById('rec-full-section');
+  const pairing = document.getElementById('rec-pairing-row');
+  if (full) full.style.display = type === 'full' ? 'block' : 'none';
+  if (pairing) pairing.style.display = type === 'pairing' ? 'block' : 'none';
+}
+
+function addIngredient() {
+  const list = document.getElementById('ingredients-list');
+  const div = document.createElement('div');
+  div.className = 'recipe-ing-row';
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px';
+  div.innerHTML = '<input class="form-input" style="width:80px" placeholder="Amount"><input class="form-input" style="flex:1" placeholder="Ingredient"><button onclick="this.parentElement.remove()" style="background:transparent;border:1px solid #4a1a1a;color:#c06060;padding:6px 10px;cursor:pointer;border-radius:4px;font-size:11px">✕</button>';
+  list.appendChild(div);
+}
+
+function addStep() {
+  const list = document.getElementById('steps-list');
+  const num = list.children.length + 1;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:flex-start';
+  div.innerHTML = `<span style="font-size:11px;color:var(--muted);padding-top:10px;min-width:20px">${num}.</span><textarea class="form-input recipe-step" style="flex:1;height:60px"></textarea><button onclick="this.parentElement.remove()" style="background:transparent;border:1px solid #4a1a1a;color:#c06060;padding:6px 10px;cursor:pointer;border-radius:4px;font-size:11px;margin-top:2px">✕</button>`;
+  list.appendChild(div);
+}
+
+function closeRecipeModal() {
+  const modal = document.getElementById('recipe-modal-bg');
+  if (modal) modal.remove();
+  editingRecipeId = null;
+}
+
+async function saveRecipe() {
+  const title = document.getElementById('rec-title').value.trim();
+  if (!title) { showToast('Title is required', 'error'); return; }
+
+  const ingRows = document.querySelectorAll('.recipe-ing-row');
+  const ingredients = Array.from(ingRows).map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { amount: inputs[0].value.trim(), item: inputs[1].value.trim() };
+  }).filter(i => i.item);
+
+  const stepEls = document.querySelectorAll('.recipe-step');
+  const steps = Array.from(stepEls).map(el => el.value.trim()).filter(Boolean);
+
+  const body = {
+    title,
+    type: document.getElementById('rec-type').value,
+    story: document.getElementById('rec-story').value.trim() || null,
+    serves: parseInt(document.getElementById('rec-serves')?.value) || null,
+    prep_time: document.getElementById('rec-prep')?.value.trim() || null,
+    cook_time: document.getElementById('rec-cook')?.value.trim() || null,
+    ingredients: ingredients.length ? ingredients : null,
+    steps: steps.length ? steps : null,
+    chef_note: document.getElementById('rec-note').value.trim() || null,
+    menu_item_id: document.getElementById('rec-item').value || null,
+    pairing_item_id: document.getElementById('rec-pairing-item') ? document.getElementById('rec-pairing-item').value || null : null,
+    active: document.getElementById('rec-active').checked
+  };
+
+  try {
+    if (editingRecipeId) {
+      await fetch(API + '/api/admin/recipes/' + editingRecipeId, {
+        method: 'PATCH', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      showToast('Recipe updated ✓', 'success');
+    } else {
+      await fetch(API + '/api/admin/recipes', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      showToast('Recipe added ✓', 'success');
+    }
+    closeRecipeModal();
+    renderRecipes();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function deleteRecipe(id, fromModal) {
+  if (!confirm('Delete this recipe? Cannot be undone.')) return;
+  try {
+    await fetch(API + '/api/admin/recipes/' + id, { method: 'DELETE', credentials: 'include' });
+    showToast('Deleted', 'success');
+    if (fromModal) closeRecipeModal();
+    renderRecipes();
   } catch(e) { showToast('Error', 'error'); }
 }
 

@@ -36,6 +36,7 @@ app.use('/api/specials', cors({origin: '*'}));
 app.use('/api/settings', cors({origin: '*'}));
 app.use('/api/vendors',  cors({origin: '*'}));
 app.use('/api/stories',  cors({origin: '*'}));
+app.use('/api/recipes',  cors({origin: '*'}));
 
 app.use(cors({
   origin: [
@@ -102,8 +103,6 @@ app.delete('/api/admin/vendors/:id', requireAuth, async (req, res) => {
 });
 
 // ── PUBLIC STORIES ────────────────────────────────────────────────
-
-// POST — customer submits
 app.post('/api/stories', async (req, res) => {
   try {
     const { category, story, dish_name, name, phone } = req.body;
@@ -123,7 +122,6 @@ app.post('/api/stories', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET approved stories for menu
 app.get('/api/stories/featured', async (req, res) => {
   try {
     const now = new Date().toISOString();
@@ -132,7 +130,6 @@ app.get('/api/stories/featured', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
-// GET approved stories for homepage (show_on_homepage=true)
 app.get('/api/stories/homepage', async (req, res) => {
   try {
     const now = new Date().toISOString();
@@ -146,18 +143,16 @@ app.get('/api/admin/stories', requireAuth, async (req, res) => {
   try {
     const { status, category } = req.query;
     let filter = '?order=created_at.desc';
-    if (status && status !== 'all')   filter += `&status=eq.${status}`;
+    if (status && status !== 'all')     filter += `&status=eq.${status}`;
     if (category && category !== 'all') filter += `&category=eq.${category}`;
-    const stories = await sb(`/customer_stories${filter}`);
-    res.json(stories);
+    res.json(await sb(`/customer_stories${filter}`));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.patch('/api/admin/stories/:id', requireAuth, async (req, res) => {
   try {
     const result = await sb(`/customer_stories?id=eq.${req.params.id}`, {
-      method: 'PATCH',
-      body: JSON.stringify(req.body)
+      method: 'PATCH', body: JSON.stringify(req.body)
     });
     res.json(result[0] || { ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
@@ -170,38 +165,92 @@ app.delete('/api/admin/stories/:id', requireAuth, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ── PUBLIC RECIPES ────────────────────────────────────────────────
+app.get('/api/recipes', async (req, res) => {
+  try {
+    const recipes = await sb('/recipes?active=eq.true&order=created_at.desc');
+    res.json(recipes);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/recipes/:id', async (req, res) => {
+  try {
+    const recipes = await sb(`/recipes?id=eq.${req.params.id}&active=eq.true`);
+    res.json(recipes[0] || null);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/recipes/by-item/:itemId', async (req, res) => {
+  try {
+    const recipes = await sb(`/recipes?menu_item_id=eq.${req.params.itemId}&active=eq.true`);
+    res.json(recipes[0] || null);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ADMIN RECIPES ─────────────────────────────────────────────────
+app.get('/api/admin/recipes', requireAuth, async (req, res) => {
+  try {
+    res.json(await sb('/recipes?order=created_at.desc'));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/api/admin/recipes/:id', requireAuth, async (req, res) => {
+  try {
+    const recipes = await sb(`/recipes?id=eq.${req.params.id}`);
+    res.json(recipes[0] || null);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/recipes', requireAuth, async (req, res) => {
+  try {
+    const result = await sb('/recipes', { method: 'POST', body: JSON.stringify(req.body) });
+    res.json(result[0]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/admin/recipes/:id', requireAuth, async (req, res) => {
+  try {
+    const body = { ...req.body, updated_at: new Date().toISOString() };
+    const result = await sb(`/recipes?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify(body) });
+    res.json(result[0]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/recipes/:id', requireAuth, async (req, res) => {
+  try {
+    await sb(`/recipes?id=eq.${req.params.id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Category groups ───────────────────────────────────────────────
-const BAR_CATEGORIES = ['wine','beer','cocktail','spirit','na','special','lunch_pizza','lunch_panini','lunch_small_plate','lunch_soup_salad','dinner_special','dinner_pasta','dinner_pizza','dinner_small_plate','brunch','beverage'];
+const BAR_CATEGORIES = ['wine','beer','cocktail','spirit','na','special','canned','lunch_pizza','lunch_panini','lunch_small_plate','lunch_soup_salad','dinner_special','dinner_pasta','dinner_pizza','dinner_small_plate','brunch','beverage'];
 const DINNER_CATEGORIES = ['pizza','panini','small_plate','pasta','soup_salad','dinner_special','brunch','beverage'];
 
 // ── PUBLIC MENU API ───────────────────────────────────────────────
 app.get('/api/menu', async (req, res) => {
   try {
     const cats = BAR_CATEGORIES.map(c => `category.eq.${c}`).join(',');
-    const items = await sb(`/menu_items?or=(${cats})&available=eq.true&order=category,sort_order`);
-    res.json(items);
+    res.json(await sb(`/menu_items?or=(${cats})&available=eq.true&order=category,sort_order`));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/dinner', async (req, res) => {
   try {
     const cats = DINNER_CATEGORIES.map(c => `category.eq.${c}`).join(',');
-    const items = await sb(`/menu_items?or=(${cats})&available=eq.true&order=category,sort_order`);
-    res.json(items);
+    res.json(await sb(`/menu_items?or=(${cats})&available=eq.true&order=category,sort_order`));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/menu/:category', async (req, res) => {
   try {
-    const items = await sb(`/menu_items?category=eq.${req.params.category}&available=eq.true&order=sort_order`);
-    res.json(items);
+    res.json(await sb(`/menu_items?category=eq.${req.params.category}&available=eq.true&order=sort_order`));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/specials', async (req, res) => {
   try {
-    const items = await sb(`/menu_items?is_special=eq.true&available=eq.true&order=category,sort_order`);
-    res.json(items);
+    res.json(await sb(`/menu_items?is_special=eq.true&available=eq.true&order=category,sort_order`));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
