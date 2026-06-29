@@ -144,6 +144,7 @@ body{background:var(--bg);color:var(--cream);font-family:'Josefin Sans',sans-ser
     <div class="msw-tab" id="msw-vendors" onclick="switchMenu('vendors')">🤝 Vendors</div>
     <div class="msw-tab" id="msw-stories" onclick="switchMenu('stories')">💬 Stories</div>
     <div class="msw-tab" id="msw-recipes" onclick="switchMenu('recipes')">👨‍🍳 Recipes</div>
+    <div class="msw-tab" id="msw-events" onclick="switchMenu('events')">🎉 Events</div>
   </div>
   <div class="main" id="main-content">
     <div class="loading">Loading...</div>
@@ -344,6 +345,9 @@ function switchMenu(menu){
   } else if(menu === 'stories'){
     barNav.style.display='none'; dinnerNav.style.display='none';
     renderStories();
+  } else if(menu === 'events'){
+    barNav.style.display='none'; dinnerNav.style.display='none';
+    renderEvents();
   } else if(menu === 'recipes'){
     barNav.style.display='none'; dinnerNav.style.display='none';
     renderRecipes();
@@ -1099,6 +1103,292 @@ async function deleteRecipe(id, fromModal) {
     showToast('Deleted', 'success');
     if (fromModal) closeRecipeModal();
     renderRecipes();
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+
+// ── EVENTS ───────────────────────────────────────────────────────
+var currentEventFilter = 'upcoming';
+
+async function renderEvents() {
+  const main = document.getElementById('main-content');
+  main.innerHTML = '<div class="loading">Loading events...</div>';
+  try {
+    const r = await fetch(API + '/api/admin/events', { credentials: 'include' });
+    const allEvents = await r.json();
+    const today = new Date(); today.setHours(0,0,0,0);
+    
+    const upcoming = allEvents.filter(ev => ev.event_type === 'recurring' || !ev.event_date || new Date(ev.event_date) >= today);
+    const past     = allEvents.filter(ev => ev.event_type === 'oneoff' && ev.event_date && new Date(ev.event_date) < today);
+    
+    const daysFull = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const toShow = currentEventFilter === 'past' ? past : upcoming;
+
+    let html = `
+      <div class="sec-header">
+        <div class="sec-title">Events</div>
+        <button class="btn-add" onclick="openEventModal(null)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add Event
+        </button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button onclick="setEventFilter('upcoming')" id="evf-upcoming" class="story-filter ${currentEventFilter==='upcoming'?'active':''}">📅 Upcoming (${upcoming.length})</button>
+        <button onclick="setEventFilter('past')" id="evf-past" class="story-filter ${currentEventFilter==='past'?'active':''}">📦 Past (${past.length})</button>
+      </div>`;
+
+    if (!toShow.length) {
+      html += '<div class="empty"><p style="font-size:32px;opacity:.2;margin-bottom:12px">🎉</p><p>' + (currentEventFilter === 'past' ? 'No past events' : 'No upcoming events') + '</p></div>';
+    } else {
+      html += '<div class="item-list">';
+      toShow.forEach(ev => {
+        const isPast = ev.event_type === 'oneoff' && ev.event_date && new Date(ev.event_date) < today;
+        const thisWeek = !isPast && ev.event_date && (() => { const d = new Date(ev.event_date); const diff = (d - today) / 86400000; return diff >= 0 && diff <= 7; })();
+        const dayLabel = ev.event_type === 'recurring' && ev.recurring_day !== null
+          ? 'Every ' + daysFull[ev.recurring_day]
+          : ev.event_date ? new Date(ev.event_date + 'T12:00:00').toLocaleDateString('en-US', {month:'long',day:'numeric',year:'numeric'}) : 'Date TBA';
+        html += `<div class="item-card ${isPast?'unavailable':''}" id="event-${ev.id}" style="${thisWeek?'border-left:3px solid var(--gold)':''}">
+          <div class="item-main" onclick="openEventModal('${ev.id}')">
+            <div class="item-name">${ev.emoji || '🎉'} ${ev.title}${ev.artist?' — '+ev.artist:''}</div>
+            <div class="item-desc">${ev.short_desc || ''}</div>
+            <div class="item-meta">
+              <span style="font-size:11px;color:var(--gold)">${dayLabel}</span>
+              ${ev.start_time ? '<span style="font-size:11px;color:var(--muted)">· ' + ev.start_time + (ev.end_time ? ' – ' + ev.end_time : '') + '</span>' : ''}
+              ${thisWeek ? '<span class="badge badge-special">This week</span>' : ''}
+              ${ev.is_closed ? '<span class="badge badge-off">Closed</span>' : ''}
+              ${ev.highlight ? '<span class="badge badge-tag">Highlighted</span>' : ''}
+              ${!ev.active ? '<span class="badge badge-off">Inactive</span>' : ''}
+            </div>
+          </div>
+          <div class="item-actions">
+            ${isPast ? `<button class="icon-btn" title="Clone to new date" onclick="cloneEvent('${ev.id}')" style="font-size:14px">↻</button>` : ''}
+            <button class="icon-btn danger" title="Delete" onclick="deleteEvent('${ev.id}')">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
+          </div>
+        </div>`;
+      });
+      html += '</div>';
+    }
+    main.innerHTML = html;
+  } catch(e) { main.innerHTML = `<div class="empty"><p>Error: ${e.message}</p></div>`; }
+}
+
+function setEventFilter(filter) {
+  currentEventFilter = filter;
+  renderEvents();
+}
+
+async function cloneEvent(id) {
+  try {
+    const r = await fetch(API + '/api/admin/events', { credentials: 'include' });
+    const events = await r.json();
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    const newDate = prompt('Clone to what date? (YYYY-MM-DD)', '');
+    if (!newDate) return;
+    const body = {...ev, id: undefined, event_date: newDate, created_at: undefined};
+    await fetch(API + '/api/admin/events', {
+      method: 'POST', credentials: 'include',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    showToast('Event cloned ✓', 'success');
+    renderEvents();
+  } catch(e) { showToast('Error', 'error'); }
+}
+
+function openEventModal(id) {
+  var existing = document.getElementById('event-modal-bg');
+  if (existing) existing.remove();
+
+  const modalHtml = `
+    <div id="event-modal-bg" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:300;overflow-y:auto;padding:20px" onclick="if(event.target===this)closeEventModal()">
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;max-width:560px;margin:0 auto;padding:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--cream)">${id ? 'Edit Event' : 'New Event'}</div>
+          <button onclick="closeEventModal()" style="background:transparent;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Emoji</label>
+          <input class="form-input" id="ev-emoji" placeholder="🎉" style="width:80px">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Title *</label>
+          <input class="form-input" id="ev-title" placeholder="e.g. Live Music Night">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Short description</label>
+          <input class="form-input" id="ev-short" placeholder="e.g. Live music every Thursday · Limited seating">
+        </div>
+        <div class="form-row">
+          <label class="form-label">Description (full)</label>
+          <textarea class="form-textarea" id="ev-desc" placeholder="More details..."></textarea>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Type</label>
+            <select class="form-select" id="ev-type" onchange="toggleEventType(this.value)">
+              <option value="recurring">Recurring weekly</option>
+              <option value="oneoff">One-off date</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Event tag</label>
+            <select class="form-select" id="ev-tag">
+              <option value="music">🎵 Live Music</option>
+              <option value="wine">🍷 Wine Tasting</option>
+              <option value="special">🎮 Special Event</option>
+              <option value="brunch">🥂 Brunch</option>
+              <option value="community">🏘️ Community</option>
+              <option value="private">🎊 Private</option>
+              <option value="closed">🚫 Closed</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div id="ev-day-row">
+            <label class="form-label">Day of week</label>
+            <select class="form-select" id="ev-day">
+              <option value="0">Sunday</option>
+              <option value="1">Monday</option>
+              <option value="2">Tuesday</option>
+              <option value="3">Wednesday</option>
+              <option value="4">Thursday</option>
+              <option value="5">Friday</option>
+              <option value="6">Saturday</option>
+            </select>
+          </div>
+          <div id="ev-date-row" style="display:none">
+            <label class="form-label">Date</label>
+            <input class="form-input" id="ev-date" type="date">
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Start time</label>
+            <input class="form-input" id="ev-start" placeholder="e.g. 6:00 PM">
+          </div>
+          <div>
+            <label class="form-label">End time</label>
+            <input class="form-input" id="ev-end" placeholder="e.g. 9:00 PM">
+          </div>
+        </div>
+        <div class="form-row">
+          <label class="form-label">Capacity</label>
+          <select class="form-select" id="ev-capacity">
+            <option value="">No limit</option>
+            <option value="limited">Limited seating</option>
+            <option value="first come">First come first serve</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label class="form-label">CTA button label (optional)</label>
+          <input class="form-input" id="ev-cta-label" placeholder="e.g. Reserve via Toast">
+        </div>
+        <div class="form-row">
+          <label class="form-label">CTA URL (optional)</label>
+          <input class="form-input" id="ev-cta-url" placeholder="https://...">
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label class="form-label">Display order</label>
+            <input class="form-input" id="ev-order" type="number" placeholder="1">
+          </div>
+        </div>
+        <div class="form-toggles">
+          <label class="toggle-label">
+            <input type="checkbox" class="toggle-input" id="ev-active" checked>
+            <div class="toggle-track"></div>Active
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button onclick="closeEventModal()" class="btn-cancel">Cancel</button>
+          ${id ? '<button onclick="deleteEvent(\''+id+'\',true)" class="btn-delete">Delete</button>' : ''}
+          <button onclick="saveEvent(\'${id||''}\');" class="btn-save">Save event</button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  if (id) {
+    fetch(API + '/api/admin/events', { credentials: 'include' })
+      .then(r => r.json())
+      .then(events => {
+        const ev = events.find(e => e.id === id);
+        if (!ev) return;
+        document.getElementById('ev-emoji').value = ev.emoji || '';
+        document.getElementById('ev-title').value = ev.title || '';
+        document.getElementById('ev-short').value = ev.short_desc || '';
+        document.getElementById('ev-desc').value = ev.description || '';
+        document.getElementById('ev-type').value = ev.event_type || 'recurring';
+        document.getElementById('ev-tag').value = ev.event_tag || 'special';
+        document.getElementById('ev-day').value = ev.recurring_day !== null ? ev.recurring_day : 0;
+        document.getElementById('ev-date').value = ev.event_date || '';
+        document.getElementById('ev-start').value = ev.start_time || '';
+        document.getElementById('ev-end').value = ev.end_time || '';
+        document.getElementById('ev-capacity').value = ev.capacity || '';
+        document.getElementById('ev-cta-label').value = ev.cta_label || '';
+        document.getElementById('ev-cta-url').value = ev.cta_url || '';
+        document.getElementById('ev-order').value = ev.display_order || '';
+        document.getElementById('ev-active').checked = ev.active !== false;
+        toggleEventType(ev.event_type || 'recurring');
+      });
+  }
+}
+
+function toggleEventType(type) {
+  const dayRow = document.getElementById('ev-day-row');
+  const dateRow = document.getElementById('ev-date-row');
+  if (dayRow) dayRow.style.display = type === 'recurring' ? 'block' : 'none';
+  if (dateRow) dateRow.style.display = type === 'oneoff' ? 'block' : 'none';
+}
+
+function closeEventModal() {
+  const modal = document.getElementById('event-modal-bg');
+  if (modal) modal.remove();
+}
+
+async function saveEvent(id) {
+  const title = document.getElementById('ev-title').value.trim();
+  if (!title) { showToast('Title is required', 'error'); return; }
+  const body = {
+    title,
+    emoji: document.getElementById('ev-emoji').value.trim() || '🎉',
+    short_desc: document.getElementById('ev-short').value.trim() || null,
+    description: document.getElementById('ev-desc').value.trim() || null,
+    event_type: document.getElementById('ev-type').value,
+    event_tag: document.getElementById('ev-tag').value,
+    recurring_day: document.getElementById('ev-type').value === 'recurring' ? parseInt(document.getElementById('ev-day').value) : null,
+    event_date: document.getElementById('ev-type').value === 'oneoff' ? document.getElementById('ev-date').value || null : null,
+    start_time: document.getElementById('ev-start').value.trim() || null,
+    end_time: document.getElementById('ev-end').value.trim() || null,
+    capacity: document.getElementById('ev-capacity').value || null,
+    cta_label: document.getElementById('ev-cta-label').value.trim() || null,
+    cta_url: document.getElementById('ev-cta-url').value.trim() || null,
+    display_order: parseInt(document.getElementById('ev-order').value) || 0,
+    active: document.getElementById('ev-active').checked
+  };
+  try {
+    if (id) {
+      await fetch(API + '/api/admin/events/' + id, { method: 'PATCH', credentials: 'include', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      showToast('Event updated ✓', 'success');
+    } else {
+      await fetch(API + '/api/admin/events', { method: 'POST', credentials: 'include', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      showToast('Event added ✓', 'success');
+    }
+    closeEventModal();
+    renderEvents();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+async function deleteEvent(id, fromModal) {
+  if (!confirm('Delete this event?')) return;
+  try {
+    await fetch(API + '/api/admin/events/' + id, { method: 'DELETE', credentials: 'include' });
+    showToast('Deleted', 'success');
+    if (fromModal) closeEventModal();
+    renderEvents();
   } catch(e) { showToast('Error', 'error'); }
 }
 

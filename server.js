@@ -37,6 +37,7 @@ app.use('/api/settings', cors({origin: '*'}));
 app.use('/api/vendors',  cors({origin: '*'}));
 app.use('/api/stories',  cors({origin: '*'}));
 app.use('/api/recipes',  cors({origin: '*'}));
+app.use('/api/events',   cors({origin: '*'}));
 
 app.use(cors({
   origin: [
@@ -219,6 +220,53 @@ app.patch('/api/admin/recipes/:id', requireAuth, async (req, res) => {
 app.delete('/api/admin/recipes/:id', requireAuth, async (req, res) => {
   try {
     await sb(`/recipes?id=eq.${req.params.id}`, { method: 'DELETE', prefer: 'return=minimal' });
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── PUBLIC EVENTS ─────────────────────────────────────────────────
+app.get('/api/events', async (req, res) => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    // Recurring events always show; one-off events only show if today or future
+    const recurring = await sb('/events?active=eq.true&event_type=eq.recurring&order=display_order.asc');
+    const upcoming  = await sb(`/events?active=eq.true&event_type=eq.oneoff&event_date=gte.${today}&order=event_date.asc`);
+    res.json([...upcoming, ...recurring]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Admin gets ALL events including past
+app.get('/api/admin/events/all', requireAuth, async (req, res) => {
+  try {
+    res.json(await sb('/events?order=event_date.desc.nullslast,display_order.asc'));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── ADMIN EVENTS ──────────────────────────────────────────────────
+app.get('/api/admin/events', requireAuth, async (req, res) => {
+  try {
+    res.json(await sb('/events?order=display_order.asc'));
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/events', requireAuth, async (req, res) => {
+  try {
+    const result = await sb('/events', { method: 'POST', body: JSON.stringify(req.body) });
+    res.json(result[0]);
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.patch('/api/admin/events/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await sb(`/events?id=eq.${req.params.id}`, { method: 'PATCH', body: JSON.stringify(req.body) });
+    res.json(result[0] || { ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/api/admin/events/:id', requireAuth, async (req, res) => {
+  try {
+    await sb(`/events?id=eq.${req.params.id}`, { method: 'DELETE', prefer: 'return=minimal' });
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
