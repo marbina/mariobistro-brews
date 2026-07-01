@@ -589,6 +589,17 @@ async function renderSettings(){
         <div class="form-row"><label class="form-label">Email</label><input class="form-input" id="s-email" value="${s.email||''}"></div>
         <div class="form-row"><label class="form-label">Address</label><input class="form-input" id="s-address" value="${s.address||''}"></div>
         <div class="form-row"><label class="form-label">Specials banner</label><input class="form-input" id="s-banner" value="${s.specials_banner||''}"></div>
+
+        <div style="margin-top:8px;padding:16px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Menu visibility</div>
+          <label class="toggle-label">
+            <input type="checkbox" class="toggle-input" id="s-menu-live" ${s.menu_live === 'true' ? 'checked' : ''}>
+            <div class="toggle-track"></div>
+            <span style="font-size:13px;color:var(--cream)">Menu is <strong>${s.menu_live === 'true' ? 'LIVE' : 'HIDDEN'}</strong> — customers ${s.menu_live === 'true' ? 'can' : 'cannot'} see the menu</span>
+          </label>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">When off, the menu page shows "Menu coming soon — call us at 716-740-8080"</div>
+        </div>
+
         <button class="settings-save" onclick="saveSettings()">Save settings</button>
         <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
           <div class="form-label" style="margin-bottom:8px">Change staff PIN</div>
@@ -607,6 +618,7 @@ async function saveSettings(){
     email:document.getElementById('s-email').value,
     address:document.getElementById('s-address').value,
     specials_banner:document.getElementById('s-banner').value,
+    menu_live:document.getElementById('s-menu-live').checked ? 'true' : 'false',
   };
   try{
     await fetch(API+'/api/admin/settings',{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
